@@ -193,7 +193,7 @@
             th, td { padding: 12px 16px; font-size: 14px; }
         }
 
-        /* --- IMPRESIÓN DEL TICKET TÉRMICO (ESTILO BLOQUES FLEXIBLES SEGUROS) --- */
+        /* --- IMPRESIÓN DEL TICKET TÉRMICO --- */
         #print-area { display: none; }
         
         @media print {
@@ -214,7 +214,7 @@
                 display: block !important; 
                 position: relative !important; 
                 width: 100% !important;
-                max-width: 300px !important; /* Límite para ticket 80mm */
+                max-width: 320px !important;
                 margin: 0 auto !important;
                 padding: 5mm 4mm !important;
                 color: black !important; 
@@ -410,19 +410,6 @@ class POS {
             const snap = await db.collection('products').get();
             this.products = [];
             snap.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
-            
-            if(this.products.length === 0) {
-                const defaults = [
-                    {name:'MENÚ ESENCIA DE MEDIODÍA', price:38.00, category:'Menús', iva:10},
-                    {name:'TIERRA TRADICION E', price:65.00, category:'Platos', iva:10},
-                    {name:'AGUA SOSTENIBLE', price:3.90, category:'Bebidas', iva:10},
-                    {name:'CERVEZA ARTESANA', price:3.50, category:'Bebidas', iva:21}
-                ];
-                for(const p of defaults) {
-                    const docRef = await db.collection('products').add(p);
-                    this.products.push({ id: docRef.id, ...p });
-                }
-            }
         } catch (e) {
             console.error("Error Firebase:", e);
         }
@@ -581,6 +568,7 @@ class POS {
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
+        // --- CÁLCULO DE IMPUESTOS ---
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
 
@@ -602,7 +590,7 @@ class POS {
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
         
         // =========================================================
-        // DISEÑO BLINDADO: Usando flexbox seguros sin % conflictivos
+        // DISEÑO BLINDADO: Flexbox simplificado para Safari
         // =========================================================
         let h = `
         <div style="width: 100%; margin: 0 auto; color: black;">
@@ -640,41 +628,43 @@ class POS {
         h += `
             <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
             
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
-                <div style="width: 50%;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
+                
+                <div style="width: 60%; padding-right: 10px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: bold;">
-                        <span style="width: 40%; text-align: left;">BASE IMP</span>
-                        <span style="width: 25%; text-align: center;">IVA</span>
-                        <span style="width: 35%; text-align: right;">CUOTA</span>
+                        <span style="width: 38%; text-align: left;">BASE IMP</span>
+                        <span style="width: 24%; text-align: center;">IVA</span>
+                        <span style="width: 38%; text-align: right;">CUOTA</span>
                     </div>
         `;
 
         if(bases[10] > 0) {
             h += `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="width: 40%; text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</span>
-                        <span style="width: 25%; text-align: center;">10%</span>
-                        <span style="width: 35%; text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</span>
+                        <span style="width: 38%; text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</span>
+                        <span style="width: 24%; text-align: center;">10%</span>
+                        <span style="width: 38%; text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</span>
                     </div>`;
         }
 
         if(bases[21] > 0) {
             h += `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="width: 40%; text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</span>
-                        <span style="width: 25%; text-align: center;">21%</span>
-                        <span style="width: 35%; text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</span>
+                        <span style="width: 38%; text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</span>
+                        <span style="width: 24%; text-align: center;">21%</span>
+                        <span style="width: 38%; text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</span>
                     </div>`;
         }
 
         h += `
                 </div>
-                <div style="width: 50%; display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
-                    <span style="font-size: 18px; transform: scaleY(1.3); display: inline-block;">TOTAL</span>
-                    <span style="font-size: 22px; font-weight: bold; white-space: nowrap;">${total.toFixed(2).replace('.', ',')} €</span>
+                
+                <div style="width: 40%; text-align: right; padding-bottom: 2px;">
+                    <span style="font-size: 16px; font-weight: bold; margin-right: 4px;">TOTAL</span>
+                    <span style="font-size: 20px; font-weight: bold; white-space: nowrap;">${total.toFixed(2).replace('.', ',')} €</span>
                 </div>
-            </div>
 
+            </div>
             <div style="border-top: 1px dashed black; margin: 15px 0;"></div>
 
             <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
