@@ -27,6 +27,7 @@
             --checkout-btn-green: #abcbc0;
             --checkout-border: #e5e7eb;
             --danger: #ef4444;
+            --gold: #f59e0b;
             --radius-lg-modal: 20px;
         }
 
@@ -47,6 +48,25 @@
         .nav-btn { width: 70px; height: 70px; border-radius: 16px; background: transparent; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; gap: 6px; }
         .nav-btn svg { width: 28px; height: 28px; fill: currentColor; }
         .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
+
+        /* Botón Z especial en sidebar */
+        .nav-btn-z {
+            width: 70px; height: 70px; border-radius: 16px; background: transparent;
+            color: #94a3b8; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: 600; gap: 4px;
+            position: relative; overflow: hidden; margin-top: auto; margin-bottom: 10px;
+        }
+        .nav-btn-z:hover { color: #f59e0b; }
+        .nav-btn-z .z-icon {
+            font-size: 32px; font-weight: 900; font-style: italic;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 6px rgba(245,158,11,0.5));
+            line-height: 1;
+        }
+        .nav-btn-z .z-label { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
 
         #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
         #mobile-header { display: none; padding: 16px 24px; background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--checkout-border); z-index: 20; align-items: center; justify-content: center; width: 100%; }
@@ -78,12 +98,27 @@
         .clear-btn { color: var(--danger); background: transparent; font-weight: 800; font-size: 13px; }
         #ticket-items { flex: 1; overflow-y: auto; padding: 10px 25px; }
         .ticket-item { display: flex; flex-direction: column; padding: 18px 0; border-bottom: 1px dashed #e2e8f0; gap: 12px; }
+        .ticket-item.is-invite { background: linear-gradient(90deg, rgba(245,158,11,0.04) 0%, transparent 100%); border-radius: 8px; padding: 12px 8px; margin: 0 -8px; border-bottom: 1px dashed #fde68a; }
         .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .item-name-wrap { display: flex; align-items: center; gap: 6px; }
+        .invite-badge { font-size: 10px; font-weight: 800; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; white-space: nowrap; }
         .item-controls { display: flex; justify-content: space-between; align-items: center; }
         .qty-controls { display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
         .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
         .qty-val { width: 36px; text-align: center; font-weight: 800; font-size: 16px; }
+
+        /* Botón estrella invitación */
+        .invite-btn {
+            width: 40px; height: 40px; background: transparent; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; transition: all 0.15s;
+            color: #d1d5db;
+        }
+        .invite-btn.active { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.6); transform: scale(1.1); }
+        .invite-btn:active { transform: scale(0.9) !important; }
+
         .item-total { font-size: 16px; font-weight: 900; color: var(--text-muted); }
+        .item-total.free { color: #f59e0b; }
         .ticket-footer { padding: 25px; background: white; border-top: 1px solid var(--checkout-border); }
         .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin-bottom: 20px; color: var(--text-main); }
         .checkout-btn { width: 100%; padding: 22px; background: #eac4ba; color: white; font-size: 20px; font-weight: 800; border-radius: 12px; transition: 0.2s; }
@@ -111,7 +146,6 @@
         .summary-total span:last-child { color: var(--checkout-rust); }
         
         .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; appearance: none; -webkit-appearance: none; }
-
         .input-section { display: flex; flex-direction: column; gap: 8px; }
         .input-group { position: relative; }
         .input-group .currency { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 600; color: #9ca3af; }
@@ -143,11 +177,64 @@
         th, td { padding: 16px 20px; border-bottom: 1px solid var(--checkout-border); font-size: 14px; color: var(--text-main); }
         th { background: #f9fafb; font-weight: 800; text-transform: uppercase; font-size: 12px; color: var(--text-muted); }
 
+        /* Modal Cierre Z */
+        #modal-z .modal { max-width: 480px; }
+        .z-modal-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 28px 28px 24px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .z-modal-header .z-title-block { display: flex; flex-direction: column; gap: 4px; }
+        .z-big-letter {
+            font-size: 52px; font-weight: 900; font-style: italic;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(245,158,11,0.4));
+            line-height: 1; display: inline-block;
+        }
+        .z-modal-header h3 { font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+        .z-modal-header .close-x { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; }
+        .z-date-badge { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px; }
+
+        .z-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .z-stat-card { background: #f8fafc; border: 1px solid var(--checkout-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+        .z-stat-card.highlight { background: #0f172a; border-color: #0f172a; }
+        .z-stat-card.highlight .z-stat-label { color: #64748b; }
+        .z-stat-card.highlight .z-stat-val { color: white; }
+        .z-stat-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .z-stat-val { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
+        .z-stat-sub { font-size: 12px; color: #94a3b8; font-weight: 500; }
+
+        .z-iva-section { background: #fafafa; border: 1px solid var(--checkout-border); border-radius: 12px; overflow: hidden; }
+        .z-iva-title { padding: 12px 16px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--checkout-border); background: white; }
+        .z-iva-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--checkout-border); }
+        .z-iva-row:last-child { border-bottom: none; }
+        .z-iva-tag { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+        .z-iva-tag.t10 { background: #dbeafe; color: #1d4ed8; }
+        .z-iva-tag.t21 { background: #ede9fe; color: #7c3aed; }
+        .z-iva-nums { display: flex; gap: 24px; }
+        .z-iva-num { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+        .z-iva-num span:first-child { font-size: 11px; color: #94a3b8; font-weight: 600; }
+        .z-iva-num span:last-child { font-size: 15px; font-weight: 800; color: var(--text-main); }
+
+        .z-total-bar { background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 12px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .z-total-bar .lbl { color: #94a3b8; font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .z-total-bar .val { font-size: 32px; font-weight: 900; color: white; letter-spacing: -1px; }
+        .z-total-bar .val span { color: #f59e0b; }
+
+        .z-invites-row { display: flex; justify-content: space-between; align-items: center; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; }
+        .z-invites-row .lbl { font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .z-invites-row .val { font-size: 16px; font-weight: 900; color: #b45309; }
+
         @media screen and (max-width: 900px) {
             #app-root { flex-direction: column; width: 100%; height: 100%; }
             #sidebar { width: 100%; height: 75px; flex-direction: row; justify-content: space-evenly; padding: 0; border-top: 1px solid rgba(255,255,255,0.1); border-right: none; order: 3; z-index: 60; }
             .brand-logo { display: none; }
             .nav-btn { width: auto; height: 100%; flex: 1; border-radius: 0; }
+            .nav-btn-z { width: auto; height: 100%; flex: 1; border-radius: 0; margin: 0; }
+            .nav-btn-z .z-icon { font-size: 26px; }
             #main-container { width: 100%; order: 2; flex: 1; display: flex; flex-direction: column; }
             #mobile-header { display: flex; width: 100%; }
             #products-area { padding: 16px; width: 100%; }
@@ -159,6 +246,7 @@
             #admin-view { padding: 16px; padding-bottom: 80px; width: 100%; }
             .table-container { border-radius: 12px; overflow-x: auto; width: 100%; }
             th, td { padding: 12px 16px; font-size: 14px; }
+            .z-stats-grid { grid-template-columns: 1fr 1fr; }
         }
 
         #print-area { display: none; }
@@ -179,15 +267,28 @@
 <div id="app-root">
     <nav id="sidebar">
         <div class="brand-logo">QUINTOPOS</div>
-        <button class="nav-btn active" data-view="pos-view"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>Ventas</button>
-        <button class="nav-btn" data-view="admin-view"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>Ajustes</button>
+        <button class="nav-btn active" data-view="pos-view">
+            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+            Ventas
+        </button>
+        <button class="nav-btn" data-view="admin-view">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            Ajustes
+        </button>
+        <button class="nav-btn-z" onclick="window.pos.openCierreZ()">
+            <span class="z-icon">Z</span>
+            <span class="z-label">CIERRE</span>
+        </button>
     </nav>
 
     <div id="main-container">
         <div id="mobile-header"><span class="mobile-brand">QUINTOPOS</span></div>
         <div id="pos-view" class="view active">
             <div id="products-area">
-                <div class="search-bar-container"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off"></div>
+                <div class="search-bar-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
+                </div>
                 <div id="categories-bar"></div>
                 <div id="products-grid"></div>
                 <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
@@ -197,17 +298,24 @@
             </div>
             
             <div id="ticket-panel">
-                <div class="ticket-header"><h2>Pedido Actual</h2><div style="display:flex; align-items:center; gap:15px;"><button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button><button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button></div></div>
+                <div class="ticket-header">
+                    <h2>Pedido Actual</h2>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button>
+                        <button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button>
+                    </div>
+                </div>
                 <div id="ticket-items"></div>
-                <div class="ticket-footer"><div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div><button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button></div>
+                <div class="ticket-footer">
+                    <div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div>
+                    <button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button>
+                </div>
             </div>
         </div>
 
         <div id="admin-view" class="view">
             <div class="admin-section">
-                <div class="admin-header">
-                    <h2>Historial de Tickets</h2>
-                </div>
+                <div class="admin-header"><h2>Historial de Tickets</h2></div>
                 <div class="table-container">
                     <table>
                         <thead><tr><th>Ticket</th><th>Fecha</th><th>Hora</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead>
@@ -245,12 +353,12 @@
     </div>
 </div>
 
+<!-- Modal Pago -->
 <div class="modal-overlay" id="modal-pay">
     <div class="modal">
         <div class="modal-header"><h3>Pago en efectivo</h3><button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
         <div class="modal-body">
             <div class="order-summary-box"><div class="lbl-title">Resumen del pedido</div><div class="pay-items-list" id="pay-items-list"></div><div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div></div>
-            
             <div style="display: flex; gap: 12px; margin-top: -5px;">
                 <div class="input-section" style="flex: 2;">
                     <div class="lbl-title" style="margin-bottom:4px;">Atendido por</div>
@@ -260,21 +368,13 @@
                     <div class="lbl-title" style="margin-bottom:4px;">Mesa</div>
                     <select id="table-select" class="checkout-input">
                         <option value="—">--</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                        <option value="9">9</option><option value="10">10</option><option value="14">14</option>
+                        <option value="15">15</option><option value="16">16</option>
                     </select>
                 </div>
             </div>
-
             <div class="input-section"><div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div><div class="input-group"><span class="currency">€</span><input type="number" id="cash-input" step="0.01" placeholder="0.00"></div><div class="quick-grid" id="quick-btns"></div></div>
             <div class="change-card"><span class="lbl">Cambio</span><span class="val" id="pay-change-val">0,00 €</span></div>
         </div>
@@ -282,6 +382,7 @@
     </div>
 </div>
 
+<!-- Modal Producto -->
 <div class="modal-overlay" id="product-modal">
     <div class="modal" style="max-width: 400px;">
         <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
@@ -301,6 +402,7 @@
     </div>
 </div>
 
+<!-- Modal Visor Ticket -->
 <div class="modal-overlay" id="viewer-modal">
     <div class="modal" style="max-width: 400px;">
         <div class="modal-header"><h3 id="viewer-modal-title">Ticket</h3><button class="close-x" onclick="document.getElementById('viewer-modal').style.display='none'">×</button></div>
@@ -313,16 +415,34 @@
     </div>
 </div>
 
+<!-- Modal Cierre Z -->
+<div class="modal-overlay" id="modal-z">
+    <div class="modal" style="max-width: 480px;">
+        <div class="z-modal-header">
+            <div class="z-title-block">
+                <span class="z-big-letter">Z</span>
+                <h3>CIERRE DE CAJA</h3>
+                <div class="z-date-badge" id="z-date-badge"></div>
+            </div>
+            <button class="close-x" onclick="document.getElementById('modal-z').style.display='none'">×</button>
+        </div>
+        <div class="modal-body" id="z-body" style="gap: 14px;"></div>
+        <div class="modal-footer" style="padding-top: 0;">
+            <button class="btn-cancel" style="width:100%; flex:none;" onclick="document.getElementById('modal-z').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <div id="print-area"></div>
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyD60WZzI2U0UUMv3W2TRDJqAC2-W_WJTXk",
-  authDomain: "quintopos.firebaseapp.com",
-  projectId: "quintopos",
-  storageBucket: "quintopos.firebasestorage.app",
-  messagingSenderId: "687672388974",
-  appId: "1:687672388974:web:96ca8aedb660d4ecb4257f"
+    apiKey: "AIzaSyD60WZzI2U0UUMv3W2TRDJqAC2-W_WJTXk",
+    authDomain: "quintopos.firebaseapp.com",
+    projectId: "quintopos",
+    storageBucket: "quintopos.firebasestorage.app",
+    messagingSenderId: "687672388974",
+    appId: "1:687672388974:web:96ca8aedb660d4ecb4257f"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -347,18 +467,15 @@ class POS {
 
     async loadData() {
         try {
-            // Contador de tickets en tiempo real
             db.collection('settings').doc('counter').onSnapshot(doc => {
                 if (doc.exists) { this.nextTicketNumber = doc.data().ticketNumber; }
                 else { db.collection('settings').doc('counter').set({ ticketNumber: 76283 }); this.nextTicketNumber = 76283; }
             });
 
-            // Productos
             const snapProducts = await db.collection('products').get();
             this.products = [];
             snapProducts.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
 
-            // Camareros
             const snapWaiters = await db.collection('waiters').get();
             this.waiters = [];
             snapWaiters.forEach(doc => this.waiters.push({ id: doc.id, ...doc.data() }));
@@ -367,7 +484,7 @@ class POS {
                 this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
             }
 
-            // Historial de órdenes en tiempo real
+            // Historial en tiempo real
             db.collection('orders').orderBy('ticketNumber', 'desc').onSnapshot(snap => {
                 this.orders = [];
                 snap.forEach(doc => this.orders.push({ id: doc.id, ...doc.data() }));
@@ -426,7 +543,8 @@ class POS {
     addToCart(id) {
         const p = this.products.find(x => x.id === id);
         const item = this.cart.find(i => i.id === id);
-        if (item) item.qty++; else this.cart.push({ ...p, qty: 1 });
+        if (item) item.qty++;
+        else this.cart.push({ ...p, qty: 1, invited: false });
         this.updateCartUI();
     }
 
@@ -439,24 +557,45 @@ class POS {
         }
     }
 
+    toggleInvite(id) {
+        const item = this.cart.find(i => i.id === id);
+        if (item) {
+            item.invited = !item.invited;
+            this.updateCartUI();
+        }
+    }
+
     clearCart() { this.cart = []; this.updateCartUI(); document.getElementById('ticket-panel').classList.remove('open'); }
 
     updateCartUI() {
         const container = document.getElementById('ticket-items');
-        container.innerHTML = this.cart.map(i => `
-            <div class="ticket-item">
-                <div class="item-info"><span>${i.name}</span><span class="item-total">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</span></div>
+        container.innerHTML = this.cart.map(i => {
+            const effectivePrice = i.invited ? 0 : i.price;
+            const lineTotal = effectivePrice * i.qty;
+            return `
+            <div class="ticket-item ${i.invited ? 'is-invite' : ''}">
+                <div class="item-info">
+                    <span class="item-name-wrap">
+                        <span>${i.name}</span>
+                        ${i.invited ? '<span class="invite-badge">★ INVITACIÓN</span>' : ''}
+                    </span>
+                    <span class="item-total ${i.invited ? 'free' : ''}">${i.invited ? '0,00 €' : (i.price * i.qty).toFixed(2).replace('.', ',') + ' €'}</span>
+                </div>
                 <div class="item-controls">
                     <div class="qty-controls">
-                        <button class="qty-btn" onclick="window.pos.updateCartQty('${i.id}', -1)">-</button>
+                        <button class="qty-btn" onclick="window.pos.updateCartQty('${i.id}', -1)">−</button>
                         <div class="qty-val">${i.qty}</div>
                         <button class="qty-btn" onclick="window.pos.updateCartQty('${i.id}', 1)">+</button>
                     </div>
+                    <button class="invite-btn ${i.invited ? 'active' : ''}" onclick="window.pos.toggleInvite('${i.id}')" title="Marcar como invitación">
+                        ${i.invited ? '★' : '☆'}
+                    </button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
-        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const total = this.cart.reduce((s, i) => s + (i.invited ? 0 : i.price * i.qty), 0);
         const count = this.cart.reduce((s, i) => s + i.qty, 0);
         const totStr = total.toFixed(2).replace('.', ',') + ' €';
 
@@ -464,38 +603,56 @@ class POS {
         document.getElementById('mobile-cart-total').textContent = totStr;
         document.getElementById('mobile-cart-count').textContent = count;
 
-        if (this.cart.length > 0) { document.getElementById('mobile-cart-preview').textContent = this.cart.map(i => `${i.qty}x ${i.name}`).join(', '); }
-        else { document.getElementById('mobile-cart-preview').textContent = 'Añade productos para empezar'; }
+        if (this.cart.length > 0) {
+            document.getElementById('mobile-cart-preview').textContent = this.cart.map(i => `${i.qty}x ${i.name}${i.invited ? ' ★' : ''}`).join(', ');
+        } else {
+            document.getElementById('mobile-cart-preview').textContent = 'Añade productos para empezar';
+        }
 
-        document.getElementById('btn-open-pay').disabled = total <= 0;
-        if (total <= 0) document.getElementById('ticket-panel').classList.remove('open');
+        document.getElementById('btn-open-pay').disabled = this.cart.length === 0;
+        if (this.cart.length === 0) document.getElementById('ticket-panel').classList.remove('open');
     }
 
     openPay() {
-        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const total = this.cart.reduce((s, i) => s + (i.invited ? 0 : i.price * i.qty), 0);
         document.getElementById('pay-total-val').textContent = total.toFixed(2).replace('.', ',') + ' €';
-        document.getElementById('pay-items-list').innerHTML = this.cart.map(i => `<div class="item-row"><span>${i.name.substring(0, 25)} <span class="item-qty">x${i.qty}</span></span><span>${(i.price * i.qty).toFixed(2).replace('.', ',')} €</span></div>`).join('');
+        document.getElementById('pay-items-list').innerHTML = this.cart.map(i => `
+            <div class="item-row">
+                <span>${i.name.substring(0, 22)}${i.invited ? ' ★' : ''} <span class="item-qty">x${i.qty}</span></span>
+                <span>${i.invited ? '0,00 €' : (i.price * i.qty).toFixed(2).replace('.', ',') + ' €'}</span>
+            </div>
+        `).join('');
 
         document.getElementById('cash-input').value = '';
         document.getElementById('pay-change-val').textContent = '0,00 €';
+        document.getElementById('btn-confirm-pay').disabled = total > 0;
 
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
         document.getElementById('table-select').value = '—';
 
-        let fast = [total];
-        let next5 = Math.ceil(total / 5) * 5; if (next5 > total) fast.push(next5);
-        let next10 = Math.ceil(total / 10) * 10; if (next10 > total && !fast.includes(next10)) fast.push(next10);
-        let next20 = Math.ceil(total / 20) * 20; if (next20 > total && !fast.includes(next20)) fast.push(next20);
-        [5, 10, 20, 50, 100, 200, 500].forEach(b => { if (b > total && !fast.includes(b)) fast.push(b); });
+        let fast = [];
+        if (total > 0) {
+            fast = [total];
+            let next5 = Math.ceil(total / 5) * 5; if (next5 > total) fast.push(next5);
+            let next10 = Math.ceil(total / 10) * 10; if (next10 > total && !fast.includes(next10)) fast.push(next10);
+            let next20 = Math.ceil(total / 20) * 20; if (next20 > total && !fast.includes(next20)) fast.push(next20);
+            [5, 10, 20, 50, 100, 200, 500].forEach(b => { if (b > total && !fast.includes(b)) fast.push(b); });
+        } else {
+            // Todo invitado: solo botón de 0
+            fast = [0];
+            document.getElementById('btn-confirm-pay').disabled = false;
+        }
 
         const uniqueFast = [...new Set(fast)].sort((a, b) => a - b).slice(0, 6);
-        document.getElementById('quick-btns').innerHTML = uniqueFast.map(v => `<button class="quick-btn" onclick="document.getElementById('cash-input').value='${v.toFixed(2)}'; window.pos.updateChange()">${v.toFixed(2).replace('.', ',')} €</button>`).join('');
+        document.getElementById('quick-btns').innerHTML = uniqueFast.map(v => `
+            <button class="quick-btn" onclick="document.getElementById('cash-input').value='${v.toFixed(2)}'; window.pos.updateChange()">${v.toFixed(2).replace('.', ',')} €</button>
+        `).join('');
 
         document.getElementById('modal-pay').style.display = 'flex';
     }
 
     updateChange() {
-        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const total = this.cart.reduce((s, i) => s + (i.invited ? 0 : i.price * i.qty), 0);
         const cash = parseFloat(document.getElementById('cash-input').value) || 0;
         const change = cash - total;
         document.getElementById('pay-change-val').textContent = (change >= 0 ? change.toFixed(2) : '0,00').replace('.', ',') + ' €';
@@ -503,21 +660,21 @@ class POS {
     }
 
     finish() {
-        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const total = this.cart.reduce((s, i) => s + (i.invited ? 0 : i.price * i.qty), 0);
         const cashStr = document.getElementById('cash-input').value;
         const cash = cashStr ? parseFloat(cashStr) : total;
-        const change = cash - total;
+        const change = Math.max(0, cash - total);
 
         const waiterSelect = document.getElementById('waiter-select');
         const waiterName = waiterSelect.options[waiterSelect.selectedIndex]?.text || 'INCOGNITO';
         const tableNumber = document.getElementById('table-select').value;
-
         const currentTicketNumber = this.nextTicketNumber;
 
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
 
         this.cart.forEach(i => {
+            if (i.invited) return; // Las invitaciones no generan base imponible
             const lineTotal = i.price * i.qty;
             const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
             const baseImpLine = lineTotal / (1 + (ivaRate / 100));
@@ -528,19 +685,23 @@ class POS {
         const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
+        const hasInvites = this.cart.some(i => i.invited);
+
         const orderData = {
             ticketNumber: currentTicketNumber,
-            dateStr: dateStr,
-            timeStr: timeStr,
-            waiter: waiterName,
-            table: tableNumber,
-            total: total,
-            cash: cash,
-            change: change,
-            items: this.cart.map(i => ({ name: i.name, qty: i.qty, price: i.price, iva: i.category === 'BEBIDAS' ? 21 : 10 }))
+            dateStr, timeStr, waiter: waiterName, table: tableNumber,
+            total, cash, change,
+            items: this.cart.map(i => ({
+                name: i.name, qty: i.qty,
+                price: i.invited ? 0 : i.price,
+                originalPrice: i.price,
+                iva: i.category === 'BEBIDAS' ? 21 : 10,
+                invited: i.invited || false
+            }))
         };
         db.collection('orders').add(orderData);
 
+        // Generar ticket impreso
         let h = `
         <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
             <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
@@ -548,14 +709,12 @@ class POS {
             28670 Villaviciosa Madrid<br>
             CIF: B87650776
         </div>
-        
         <table class="p-table" style="margin-bottom: 8px;">
             <tr>
                 <td style="text-align: left; width: 50%;">FACT.SIMPLIFICADA<br>T001/${currentTicketNumber}</td>
                 <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA ${tableNumber}</td>
             </tr>
         </table>
-        
         <table class="p-table">
             <tr style="border-bottom: 1px dashed black;">
                 <th style="text-align: left; width: 12%; padding-bottom: 4px; font-weight: normal;">UDS</th>
@@ -566,19 +725,28 @@ class POS {
         `;
 
         this.cart.forEach(i => {
-            h += `
-            <tr>
-                <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
-                <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 16)}</td>
-                <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
-                <td style="text-align: right; padding-top: 4px;">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</td>
-            </tr>`;
+            if (i.invited) {
+                h += `
+                <tr>
+                    <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                    <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 14)}<br><span style="font-size:10px;">** INVITACION **</span></td>
+                    <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right; padding-top: 4px;">0,00 €</td>
+                </tr>`;
+            } else {
+                h += `
+                <tr>
+                    <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                    <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 16)}</td>
+                    <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right; padding-top: 4px;">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</td>
+                </tr>`;
+            }
         });
 
         h += `
         </table>
         <div class="p-dashed"></div>
-        
         <table class="p-table" style="margin-bottom: 12px;">
             <tr>
                 <td style="width: 55%; vertical-align: bottom;">
@@ -589,24 +757,8 @@ class POS {
                             <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
                         </tr>
         `;
-
-        if (bases[10] > 0) {
-            h += `
-                        <tr>
-                            <td style="text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</td>
-                            <td style="text-align: center;">10%</td>
-                            <td style="text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</td>
-                        </tr>`;
-        }
-
-        if (bases[21] > 0) {
-            h += `
-                        <tr>
-                            <td style="text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</td>
-                            <td style="text-align: center;">21%</td>
-                            <td style="text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</td>
-                        </tr>`;
-        }
+        if (bases[10] > 0) { h += `<tr><td style="text-align:left;">${bases[10].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">10%</td><td style="text-align:right;">${cuotas[10].toFixed(2).replace('.', ',')}</td></tr>`; }
+        if (bases[21] > 0) { h += `<tr><td style="text-align:left;">${bases[21].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">21%</td><td style="text-align:right;">${cuotas[21].toFixed(2).replace('.', ',')}</td></tr>`; }
 
         h += `
                     </table>
@@ -617,9 +769,7 @@ class POS {
                 </td>
             </tr>
         </table>
-
         <div class="p-dashed"></div>
-
         <table class="p-table" style="margin-bottom: 15px;">
             <tr>
                 <td style="width: 40%;"></td>
@@ -632,7 +782,6 @@ class POS {
                 <td style="text-align: right;">${change.toFixed(2).replace('.', ',')} €</td>
             </tr>
         </table>
-        
         <div style="text-align: center; line-height: 1.2;">
             *** GRACIAS POR SU VISITA ***<br>
             <div style="text-align: left; margin-top: 5px;">ATENDIDO POR: ${waiterName}</div>
@@ -641,7 +790,6 @@ class POS {
 
         document.getElementById('print-area').innerHTML = h;
         document.getElementById('print-area').offsetHeight;
-
         window.print();
 
         db.collection('settings').doc('counter').update({
@@ -649,6 +797,94 @@ class POS {
         }).catch(e => console.error("Error contador:", e));
     }
 
+    // ── CIERRE Z ──────────────────────────────────────────────
+    openCierreZ() {
+        const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        document.getElementById('z-date-badge').textContent = today;
+
+        // Filtramos solo los tickets de hoy
+        const todayOrders = this.orders.filter(o => o.dateStr === today);
+
+        let totalVentas = 0;
+        let base10 = 0, cuota10 = 0;
+        let base21 = 0, cuota21 = 0;
+        let totalInvitaciones = 0;
+        let numInvitaciones = 0;
+
+        todayOrders.forEach(o => {
+            totalVentas += o.total;
+            o.items.forEach(i => {
+                if (i.invited) {
+                    totalInvitaciones += i.originalPrice * i.qty;
+                    numInvitaciones += i.qty;
+                    return;
+                }
+                const lineTotal = i.price * i.qty;
+                const ivaRate = i.iva || (i.category === 'BEBIDAS' ? 21 : 10);
+                const base = lineTotal / (1 + ivaRate / 100);
+                const cuota = lineTotal - base;
+                if (ivaRate === 21) { base21 += base; cuota21 += cuota; }
+                else { base10 += base; cuota10 += cuota; }
+            });
+        });
+
+        const totalBase = base10 + base21;
+        const totalCuotas = cuota10 + cuota21;
+
+        const body = document.getElementById('z-body');
+        body.innerHTML = `
+            <div class="z-stats-grid">
+                <div class="z-stat-card">
+                    <div class="z-stat-label">Tickets hoy</div>
+                    <div class="z-stat-val">${todayOrders.length}</div>
+                    <div class="z-stat-sub">facturas emitidas</div>
+                </div>
+                <div class="z-stat-card">
+                    <div class="z-stat-label">Ticket medio</div>
+                    <div class="z-stat-val">${todayOrders.length > 0 ? (totalVentas / todayOrders.length).toFixed(2).replace('.', ',') : '0,00'} €</div>
+                    <div class="z-stat-sub">por cliente</div>
+                </div>
+            </div>
+
+            <div class="z-iva-section">
+                <div class="z-iva-title">Desglose por IVA</div>
+                ${base10 > 0 ? `
+                <div class="z-iva-row">
+                    <span class="z-iva-tag t10">10% IVA</span>
+                    <div class="z-iva-nums">
+                        <div class="z-iva-num"><span>Base</span><span>${base10.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Cuota</span><span>${cuota10.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Total</span><span>${(base10 + cuota10).toFixed(2).replace('.', ',')} €</span></div>
+                    </div>
+                </div>` : ''}
+                ${base21 > 0 ? `
+                <div class="z-iva-row">
+                    <span class="z-iva-tag t21">21% IVA</span>
+                    <div class="z-iva-nums">
+                        <div class="z-iva-num"><span>Base</span><span>${base21.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Cuota</span><span>${cuota21.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Total</span><span>${(base21 + cuota21).toFixed(2).replace('.', ',')} €</span></div>
+                    </div>
+                </div>` : ''}
+                ${base10 === 0 && base21 === 0 ? `<div class="z-iva-row" style="justify-content:center; color:#94a3b8; font-size:14px;">Sin ventas registradas hoy</div>` : ''}
+            </div>
+
+            ${numInvitaciones > 0 ? `
+            <div class="z-invites-row">
+                <span class="lbl">★ Invitaciones (${numInvitaciones} uds)</span>
+                <span class="val">−${totalInvitaciones.toFixed(2).replace('.', ',')} €</span>
+            </div>` : ''}
+
+            <div class="z-total-bar">
+                <span class="lbl">Total cobrado</span>
+                <span class="val"><span>${totalVentas.toFixed(2).replace('.', ',')}</span> €</span>
+            </div>
+        `;
+
+        document.getElementById('modal-z').style.display = 'flex';
+    }
+
+    // ── ADMIN ─────────────────────────────────────────────────
     renderAdmin() {
         document.getElementById('orders-list').innerHTML = this.orders.map(o => `
             <tr>
@@ -676,16 +912,13 @@ class POS {
                     <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openProductModal('${p.id}')">Editar</button>
                     <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delP('${p.id}')">Eliminar</button>
                 </td>
-            </tr>
-            `;
+            </tr>`;
         }).join('');
 
         document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
             <tr>
                 <td><strong>${w.name.toUpperCase()}</strong></td>
-                <td>
-                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button>
-                </td>
+                <td><button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button></td>
             </tr>
         `).join('');
     }
@@ -693,20 +926,18 @@ class POS {
     viewOrder(id) {
         const o = this.orders.find(x => x.id === id);
         if (!o) return;
-
         document.getElementById('viewer-modal-title').textContent = `T001/${o.ticketNumber}`;
-
         let text = `Fecha: ${o.dateStr} a las ${o.timeStr || '--:--'}\n`;
         text += `Camarero: ${o.waiter} | Mesa: ${o.table}\n`;
         text += `--------------------------------------\n`;
         o.items.forEach(i => {
-            text += `${i.qty}x ${i.name.padEnd(20, ' ').substring(0, 20)} ${(i.price * i.qty).toFixed(2)} €\n`;
+            const label = i.invited ? ' [INVITACIÓN]' : '';
+            text += `${i.qty}x ${i.name.padEnd(18, ' ').substring(0, 18)}${label} ${i.invited ? '0,00' : (i.price * i.qty).toFixed(2)} €\n`;
         });
         text += `--------------------------------------\n`;
         text += `TOTAL:                  ${o.total.toFixed(2)} €\n`;
         text += `Efectivo:               ${o.cash.toFixed(2)} €\n`;
         text += `Cambio:                 ${o.change.toFixed(2)} €\n`;
-
         document.getElementById('ticket-viewer-content').textContent = text;
         document.getElementById('viewer-modal').style.display = 'flex';
     }
@@ -743,13 +974,10 @@ class POS {
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
         const iva = category === 'BEBIDAS' ? 21 : 10;
-
         if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
         const data = { name, category, price, iva };
-
         if (id) await db.collection('products').doc(id).update(data);
         else await db.collection('products').add(data);
-
         this.closeProductModal();
         this.loadData();
     }
