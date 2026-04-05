@@ -116,9 +116,8 @@
         .summary-total span:first-child { color: #111; font-size: 18px;}
         .summary-total span:last-child { color: var(--checkout-rust); }
         
-        /* Inputs Modales Generales */
-        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; }
-        select.checkout-input { appearance: none; -webkit-appearance: none; }
+        /* Selects de Checkout */
+        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; appearance: none; -webkit-appearance: none; }
 
         .input-section { display: flex; flex-direction: column; gap: 8px; }
         .input-group { position: relative; }
@@ -259,7 +258,20 @@
                 </div>
                 <div class="input-section" style="flex: 1;">
                     <div class="lbl-title" style="margin-bottom:4px;">Mesa</div>
-                    <input type="number" id="table-input" class="checkout-input" placeholder="Ej: 9" min="1">
+                    <select id="table-select" class="checkout-input">
+                        <option value="—">--</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                    </select>
                 </div>
             </div>
 
@@ -321,18 +333,22 @@ class POS {
 
     async loadData() {
         try {
+            // Cargar Productos
             const snapProducts = await db.collection('products').get();
             this.products = [];
             snapProducts.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
 
+            // Cargar Camareros
             const snapWaiters = await db.collection('waiters').get();
             this.waiters = [];
             snapWaiters.forEach(doc => this.waiters.push({ id: doc.id, ...doc.data() }));
             
+            // Si no hay camareros, crear uno por defecto
             if(this.waiters.length === 0) {
                 const docRef = await db.collection('waiters').add({name: 'SAMUEL'});
                 this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
             }
+
         } catch (e) { console.error("Error Firebase:", e); }
         
         this.render();
@@ -437,9 +453,10 @@ class POS {
         
         document.getElementById('cash-input').value = '';
         document.getElementById('pay-change-val').textContent = '0,00 €';
-        document.getElementById('table-input').value = ''; // Vaciar la mesa al cobrar
         
+        // Reset de desplegables
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
+        document.getElementById('table-select').value = '—'; // Reseteamos la mesa a vacía
 
         let fast = [total];
         let next5 = Math.ceil(total/5)*5; if(next5 > total) fast.push(next5);
@@ -467,11 +484,12 @@ class POS {
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
+        // Coger los datos de camarero y mesa
         const waiterSelect = document.getElementById('waiter-select');
         const waiterName = waiterSelect.options[waiterSelect.selectedIndex]?.text || 'INCOGNITO';
         
-        const tableInputRaw = document.getElementById('table-input').value.trim();
-        const tableNumber = tableInputRaw !== '' ? tableInputRaw : '—'; // Guion si está vacío
+        const tableSelect = document.getElementById('table-select');
+        const tableNumber = tableSelect.value;
         
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
@@ -487,6 +505,7 @@ class POS {
         const rnd = Math.floor(Math.random() * 90000) + 10000;
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
         
+        // TICKET TABULADO BLINDADO
         let h = `
         <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
             <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
@@ -591,6 +610,7 @@ class POS {
     }
 
     renderAdmin() {
+        // Render Tabla Productos
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
             const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
             return `
@@ -607,14 +627,18 @@ class POS {
             `
         }).join('');
 
+        // Render Tabla Camareros
         document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
             <tr>
                 <td><strong>${w.name.toUpperCase()}</strong></td>
-                <td><button style="color:red; background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button></td>
+                <td>
+                    <button style="color:red; background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button>
+                </td>
             </tr>
         `).join('');
     }
 
+    // --- GESTIÓN PRODUCTOS ---
     openProductModal(id = null) {
         if (id) {
             const p = this.products.find(x => x.id === id);
@@ -640,6 +664,7 @@ class POS {
         const name = document.getElementById('form-name').value.trim();
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
+        // El IVA se calcula automáticamente según la categoría
         const iva = category === 'BEBIDAS' ? 21 : 10;
         
         if(!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
@@ -652,15 +677,24 @@ class POS {
         this.loadData();
     }
 
-    async delP(id) { if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); } }
+    async delP(id) {
+        if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); }
+    }
 
+    // --- GESTIÓN CAMAREROS ---
     async addWaiter() {
         const n = prompt("Nombre del Camarero:");
-        if(n && n.trim() !== '') { await db.collection('waiters').add({ name: n.trim() }); this.loadData(); }
+        if(n && n.trim() !== '') {
+            await db.collection('waiters').add({ name: n.trim() });
+            this.loadData();
+        }
     }
 
     async delWaiter(id) {
-        if(confirm("¿Eliminar este camarero?")) { await db.collection('waiters').doc(id).delete(); this.loadData(); }
+        if(confirm("¿Eliminar este camarero?")) {
+            await db.collection('waiters').doc(id).delete();
+            this.loadData();
+        }
     }
 }
 
