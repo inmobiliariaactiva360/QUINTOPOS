@@ -25,7 +25,7 @@
             --radius-md: 12px;
             --radius-lg: 20px;
             
-            /* Colores Checkout */
+            /* Colores Exactos Checkout */
             --checkout-rust: #c25a42;
             --checkout-green-bg: #eaf5ee;
             --checkout-green-text: #41815d;
@@ -36,8 +36,11 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         
+        /* Solución iOS Safari: Bloquear viewport al 100% en PANTALLA */
         @media screen {
-            html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
+            html, body {
+                width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            }
         }
 
         button { cursor: pointer; border: none; outline: none; transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -67,7 +70,6 @@
         /* Área Productos */
         #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; min-width: 0; }
         
-        /* BARRA DE BÚSQUEDA */
         .search-bar-container { margin-bottom: 15px; position: relative; flex-shrink: 0; }
         .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .search-bar-container input:focus { background: white; border-color: var(--primary-light); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1); }
@@ -117,7 +119,7 @@
         .fab-bottom { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #mobile-cart-fab .badge { background: white; color: var(--checkout-rust); padding: 2px 8px; border-radius: 20px; font-size: 14px; }
 
-        /* MODAL CHECKOUT */
+        /* --- MODAL CHECKOUT --- */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
         .modal { background: #ffffff; border-radius: var(--radius-lg-modal); width: 100%; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
         .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--checkout-border); }
@@ -154,7 +156,7 @@
         .btn-confirm { flex: 1.8; padding: 14px; background: var(--checkout-btn-green); color: white; border-radius: 8px; font-weight: 700; font-size: 15px; border: none;}
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Formulario Productos */
+        /* Modal Gestión Producto */
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;}
         .form-group label { font-weight: 700; color: var(--text-main); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
         .form-group input, .form-group select { padding: 14px; font-size: 15px; border: 1px solid var(--checkout-border); border-radius: 8px; background: #f9fafb; font-weight: 600; color: #1f2937; outline: none;}
@@ -169,6 +171,7 @@
         th, td { padding: 16px 20px; border-bottom: 1px solid var(--checkout-border); font-size: 14px; color: var(--text-main); }
         th { background: #f9fafb; font-weight: 800; text-transform: uppercase; font-size: 12px; color: var(--text-muted); }
 
+        /* Responsive Móvil/Tablet Full Screen Fix */
         @media screen and (max-width: 900px) {
             #app-root { flex-direction: column; width: 100%; height: 100%; }
             #sidebar { width: 100%; height: 75px; flex-direction: row; justify-content: space-evenly; padding: 0; border-top: 1px solid rgba(255,255,255,0.1); border-right: none; order: 3; z-index: 60; }
@@ -191,7 +194,7 @@
             th, td { padding: 12px 16px; font-size: 14px; }
         }
 
-        /* --- IMPRESIÓN DEL TICKET TÉRMICO (NUEVO MÉTODO BLINDADO SAFARI) --- */
+        /* --- IMPRESIÓN DEL TICKET TÉRMICO (TABLAS ESTRICTAS) --- */
         #print-area { display: none; }
         
         @media print {
@@ -214,12 +217,14 @@
                 position: absolute !important; 
                 left: 0 !important; 
                 top: 0 !important; 
-                width: 75mm !important; 
+                width: 72mm !important; /* Estricto a 72mm para que quepa holgado en papel de 80mm */
                 max-width: 100% !important;
                 margin: 0 auto !important;
                 padding: 0 !important;
                 color: black !important; 
             }
+
+            .nowrap { white-space: nowrap !important; }
         }
     </style>
 </head>
@@ -580,7 +585,7 @@ class POS {
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
-        // --- CÁLCULO DE IMPUESTOS SEGURO ---
+        // --- CÁLCULO DE IMPUESTOS ---
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
 
@@ -602,107 +607,111 @@ class POS {
         const rnd = Math.floor(Math.random() * 90000) + 10000;
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
         
-        // ESTRUCTURA 100% FLEX CERRADO PARA SAFARI (Simula el ticket físico perfectamente)
+        // --- HTML DEL TICKET (TABLA ESTRICTA 5 COLUMNAS) ---
         let h = `
-        <div style="font-family: 'Courier New', Courier, monospace; font-size: 12px; color: black; line-height: 1.2;">
-            <div style="text-align: center; margin-bottom: 12px;">
-                <div style="font-size: 18px; font-weight: normal; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
+        <div style="font-family: 'Courier New', Courier, monospace; font-size: 11px; color: black; line-height: 1.3;">
+            
+            <div style="text-align: center; margin-bottom: 10px;">
+                <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 2px;">EL QUINTO SABOR</div>
                 Avda. Quitapesares, 17<br>
                 28670 Villaviciosa Madrid<br>
                 CIF: B87650776
             </div>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                <div>FACT.SIMPLIFICADA<br>T001/${rnd}</div>
-                <div style="text-align: right;">FECHA ${dateStr}<br>SALA 3 MESA 9</div>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                <tr>
+                    <td style="text-align: left; vertical-align: top;">FACT.SIMPLIFICADA<br>T001/${rnd}</td>
+                    <td style="text-align: right; vertical-align: top;">FECHA ${dateStr}<br>SALA 3 MESA 9</td>
+                </tr>
+            </table>
             
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
                 <tr>
-                    <th style="text-align: left; font-weight: normal; width: 10%; border-bottom: 1px dashed black; padding-bottom: 4px;">UDS</th>
-                    <th style="text-align: left; font-weight: normal; width: 50%; border-bottom: 1px dashed black; padding-bottom: 4px;">DESCRIPCION</th>
-                    <th style="text-align: right; font-weight: normal; width: 15%; border-bottom: 1px dashed black; padding-bottom: 4px;">PVP</th>
-                    <th style="text-align: right; font-weight: normal; width: 25%; border-bottom: 1px dashed black; padding-bottom: 4px;">IMPORTE</th>
+                    <th style="text-align: left; width: 12%; border-bottom: 1px dashed black; padding-bottom: 4px;" class="nowrap">UDS</th>
+                    <th style="text-align: left; width: 46%; border-bottom: 1px dashed black; padding-bottom: 4px;" class="nowrap">DESCRIPCION</th>
+                    <th style="text-align: right; width: 18%; border-bottom: 1px dashed black; padding-bottom: 4px;" class="nowrap">PVP</th>
+                    <th style="text-align: right; width: 24%; border-bottom: 1px dashed black; padding-bottom: 4px;" class="nowrap">IMPORTE</th>
                 </tr>
-                <tr><td colspan="4" style="height: 5px;"></td></tr>
         `;
         
         this.cart.forEach(i => {
             h += `
                 <tr>
-                    <td style="text-align: left; vertical-align: top;">${i.qty}</td>
-                    <td style="text-align: left; vertical-align: top;">${i.name.toUpperCase()}</td>
-                    <td style="text-align: right; vertical-align: top;">${i.price.toFixed(2).replace('.', ',')}</td>
-                    <td style="text-align: right; vertical-align: top;">${(i.price*i.qty).toFixed(2).replace('.', ',')} €</td>
+                    <td style="text-align: left; padding-top: 4px; vertical-align: top;">${i.qty}</td>
+                    <td style="text-align: left; padding-top: 4px; vertical-align: top;">${i.name.toUpperCase()}</td>
+                    <td style="text-align: right; padding-top: 4px; vertical-align: top;">${i.price.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right; padding-top: 4px; vertical-align: top;" class="nowrap">${(i.price*i.qty).toFixed(2).replace('.', ',')} €</td>
                 </tr>`;
         });
-        
+
         h += `
             </table>
+            <div style="border-top: 1px dashed black; margin: 8px 0;"></div>
             
-            <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div style="width: 55%;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="width: 33%; text-align: left;">BASE IMP</span>
-                        <span style="width: 33%; text-align: center;">IVA</span>
-                        <span style="width: 33%; text-align: right;">CUOTA</span>
-                    </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <tr>
+                    <td style="text-align: left; width: 18%;" class="nowrap">BASE IMP</td>
+                    <td style="text-align: center; width: 12%;" class="nowrap">IVA</td>
+                    <td style="text-align: left; width: 18%; padding-left: 5px;" class="nowrap">CUOTA</td>
+                    <td style="text-align: right; font-size: 16px; width: 20%; padding-right: 5px;" class="nowrap">TOTAL</td>
+                    <td style="text-align: right; font-size: 18px; font-weight: bold; width: 32%;" class="nowrap">${total.toFixed(2).replace('.', ',')} €</td>
+                </tr>
         `;
 
         if(bases[10] > 0) {
             h += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="width: 33%; text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</span>
-                        <span style="width: 33%; text-align: center;">10%</span>
-                        <span style="width: 33%; text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</span>
-                    </div>`;
+                <tr>
+                    <td style="text-align: left;" class="nowrap">${bases[10].toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: center;" class="nowrap">10%</td>
+                    <td style="text-align: left; padding-left: 5px;" class="nowrap">${cuotas[10].toFixed(2).replace('.', ',')}</td>
+                    <td></td>
+                    <td></td>
+                </tr>`;
         }
 
         if(bases[21] > 0) {
             h += `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="width: 33%; text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</span>
-                        <span style="width: 33%; text-align: center;">21%</span>
-                        <span style="width: 33%; text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</span>
-                    </div>`;
+                <tr>
+                    <td style="text-align: left;" class="nowrap">${bases[21].toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: center;" class="nowrap">21%</td>
+                    <td style="text-align: left; padding-left: 5px;" class="nowrap">${cuotas[21].toFixed(2).replace('.', ',')}</td>
+                    <td></td>
+                    <td></td>
+                </tr>`;
         }
 
         h += `
-                </div>
-                <div style="width: 45%; display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
-                    <span style="font-size: 16px; transform: scaleY(1.2); display: inline-block;">TOTAL</span>
-                    <span style="font-size: 18px; font-weight: bold;">${total.toFixed(2).replace('.', ',')} €</span>
-                </div>
-            </div>
-
+            </table>
+            
             <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
 
-            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-                <div style="width: 33%;"></div>
-                <div style="width: 33%; text-align: right;">ENTREGADO</div>
-                <div style="width: 33%; text-align: right;">CAMBIO</div>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <div style="width: 33%;">TA CREDITO</div>
-                <div style="width: 33%; text-align: right;">${cash.toFixed(2).replace('.', ',')}</div>
-                <div style="width: 33%; text-align: right;">${change.toFixed(2).replace('.', ',')} €</div>
-            </div>
-
-            <div style="text-align: center;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <tr>
+                    <td style="width: 30%;"></td>
+                    <td style="width: 35%; text-align: right;" class="nowrap">ENTREGADO</td>
+                    <td style="width: 35%; text-align: right;" class="nowrap">CAMBIO</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;" class="nowrap">TA CREDITO</td>
+                    <td style="text-align: right;" class="nowrap">${cash.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right;" class="nowrap">${change.toFixed(2).replace('.', ',')} €</td>
+                </tr>
+            </table>
+            
+            <div style="text-align: center; line-height: 1.2;">
                 *** GRACIAS POR SU VISITA ***<br>
-                <div style="text-align: left; margin-top: 5px;">ATENDIDO POR: SAMUEL</div>
+                <div style="text-align: left; margin-top: 6px;">ATENDIDO POR: SAMUEL</div>
             </div>
         </div>
         `;
         
         document.getElementById('print-area').innerHTML = h;
         
-        // Esperamos 100ms para asegurar que Safari dibuja el ticket antes de lanzar AirPrint
-        setTimeout(() => {
-            window.print();
-        }, 100);
+        // Forzamos dibujo en pantalla oculto
+        document.getElementById('print-area').offsetHeight;
+
+        // Disparo DIRECTO
+        window.print();
     }
 
     renderAdmin() {
