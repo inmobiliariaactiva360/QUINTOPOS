@@ -10,6 +10,7 @@
 
     <style>
         :root {
+            /* Colores Base */
             --primary: #4f46e5;
             --primary-light: #6366f1;
             --primary-dark: #3730a3;
@@ -21,8 +22,8 @@
             --border-glass: rgba(255, 255, 255, 0.6);
             --sidebar-bg: #0f172a;
             --sidebar-active: rgba(255, 255, 255, 0.15);
-            --radius-md: 12px;
-            --radius-lg: 20px;
+            
+            /* Colores Checkout */
             --checkout-rust: #c25a42;
             --checkout-green-bg: #eaf5ee;
             --checkout-green-text: #41815d;
@@ -37,13 +38,13 @@
             html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         }
 
-        button { cursor: pointer; border: none; outline: none; transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        button { cursor: pointer; border: none; outline: none; transition: all 0.1s; }
         button:active { transform: scale(0.97); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
         input, select { user-select: auto; }
 
+        /* Interfaz App */
         #app-root { display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; }
-
         #sidebar { width: 90px; background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 50; flex-shrink: 0; }
         .brand-logo { color: white; font-size: 10px; font-weight: 900; letter-spacing: 1px; text-align: center; margin-bottom: 10px; }
         .nav-btn { width: 70px; height: 70px; border-radius: 16px; background: transparent; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; gap: 6px; }
@@ -53,20 +54,18 @@
         #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
         #mobile-header { display: none; padding: 16px 24px; background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--checkout-border); z-index: 20; align-items: center; justify-content: center; width: 100%; }
         .mobile-brand { font-size: 18px; font-weight: 900; color: var(--text-main); letter-spacing: 1px;}
-
         .view { flex: 1; display: none; height: 100%; overflow: hidden; width: 100%; }
         .view.active { display: flex; }
         #pos-view { flex-direction: row; width: 100%; }
 
+        /* Productos */
         #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; min-width: 0; }
         .search-bar-container { margin-bottom: 15px; position: relative; flex-shrink: 0; }
-        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-        .search-bar-container input:focus { background: white; border-color: var(--primary-light); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1); }
+        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
 
         #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; }
         #categories-bar::-webkit-scrollbar { display: none; }
-        
         .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; font-size: 15px; white-space: nowrap; border: 1px solid var(--border-glass); }
         .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
 
@@ -76,12 +75,12 @@
         .product-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         .product-price { font-size: 18px; color: var(--checkout-rust); font-weight: 900; }
 
+        /* Ticket Panel UI */
         #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.02); z-index: 40; transition: transform 0.3s ease; }
         .ticket-header { padding: 25px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
         .ticket-header h2 { font-size: 20px; font-weight: 900; color: var(--text-main); margin: 0; }
         .close-ticket-btn { display: none; font-size: 28px; color: var(--text-main); background: transparent; line-height: 1; }
         .clear-btn { color: var(--danger); background: transparent; font-weight: 800; font-size: 13px; }
-        
         #ticket-items { flex: 1; overflow-y: auto; padding: 10px 25px; }
         .ticket-item { display: flex; flex-direction: column; padding: 18px 0; border-bottom: 1px dashed #e2e8f0; gap: 12px; }
         .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--text-main); }
@@ -90,7 +89,6 @@
         .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
         .qty-val { width: 36px; text-align: center; font-weight: 800; font-size: 16px; }
         .item-total { font-size: 16px; font-weight: 900; color: var(--text-muted); }
-
         .ticket-footer { padding: 25px; background: white; border-top: 1px solid var(--checkout-border); }
         .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin-bottom: 20px; color: var(--text-main); }
         .checkout-btn { width: 100%; padding: 22px; background: #eac4ba; color: white; font-size: 20px; font-weight: 800; border-radius: 12px; transition: 0.2s; }
@@ -101,42 +99,36 @@
         .fab-bottom { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #mobile-cart-fab .badge { background: white; color: var(--checkout-rust); padding: 2px 8px; border-radius: 20px; font-size: 14px; }
 
+        /* Modal Checkout UI */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
         .modal { background: #ffffff; border-radius: var(--radius-lg-modal); width: 100%; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
         .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--checkout-border); }
         .modal-header h3 { font-size: 18px; font-weight: 700; color: #111; }
         .close-x { background: white; border: 1px solid var(--checkout-border); width: 32px; height: 32px; border-radius: 8px; color: #888; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-
         .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto;}
-        
         .order-summary-box { border: 1px solid var(--checkout-border); border-radius: 8px; padding: 16px; background: #ffffff; }
         .lbl-title { font-size: 11px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
         .pay-items-list { max-height: 100px; overflow-y: auto; margin-bottom: 10px; }
         .item-row { display: flex; justify-content: space-between; font-size: 14px; color: #374151; margin-bottom: 8px; }
         .item-qty { color: #9ca3af; margin-left: 8px; font-size: 13px; font-family: monospace;}
-        
         .summary-total { display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px solid var(--checkout-border); padding-top: 16px; font-size: 22px; font-weight: 800; align-items: center;}
         .summary-total span:first-child { color: #111; font-size: 18px;}
         .summary-total span:last-child { color: var(--checkout-rust); }
-
         .input-section { display: flex; flex-direction: column; gap: 8px; }
         .input-group { position: relative; }
         .input-group .currency { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 600; color: #9ca3af; }
         .input-group input { width: 100%; padding: 16px 16px 16px 40px; font-size: 26px; font-weight: 700; border: 2px solid var(--checkout-rust); border-radius: 8px; outline: none; color: #1f2937; letter-spacing: -0.5px; }
-
         .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px;}
         .quick-btn { padding: 12px 6px; background: white; border: 1px solid var(--checkout-border); border-radius: 6px; font-weight: 600; font-size: 14px; color: #4b5563; }
-        .quick-btn:active { background: #f3f4f6; }
-
         .change-card { background: var(--checkout-green-bg); padding: 16px 20px; border-radius: 8px; border: 1px solid #d1e5d9; display: flex; justify-content: space-between; align-items: center; }
         .change-card .lbl { color: var(--checkout-green-text); font-weight: 600; font-size: 14px; }
         .change-card .val { color: var(--checkout-green-text); font-weight: 800; font-size: 24px; letter-spacing: -1px;}
-
         .modal-footer { padding: 0 24px 24px 24px; display: flex; gap: 12px; }
         .btn-cancel { flex: 1; padding: 14px; background: white; border: 1px solid var(--checkout-border); border-radius: 8px; font-weight: 600; color: #4b5563; font-size: 15px; }
         .btn-confirm { flex: 1.8; padding: 14px; background: var(--checkout-btn-green); color: white; border-radius: 8px; font-weight: 700; font-size: 15px; border: none;}
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        /* Modal Admin UI */
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;}
         .form-group label { font-weight: 700; color: var(--text-main); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
         .form-group input, .form-group select { padding: 14px; font-size: 15px; border: 1px solid var(--checkout-border); border-radius: 8px; background: #f9fafb; font-weight: 600; color: #1f2937; outline: none;}
@@ -172,39 +164,42 @@
             th, td { padding: 12px 16px; font-size: 14px; }
         }
 
-        /* --- ESTILOS DE IMPRESIÓN (TEXTO PREFORMATEADO PARA EVITAR BUGS DE SAFARI) --- */
+        /* =========================================
+           IMPRESIÓN TÉRMICA (BLINDADO SAFARI iOS) 
+           ========================================= */
         #print-area { display: none; }
         
         @media print {
+            @page { margin: 0; } /* Elimina márgenes extra de iOS */
+            
             html, body {
                 position: static !important;
                 overflow: visible !important;
                 height: auto !important;
-                width: auto !important;
+                width: 100% !important;
                 background: white !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
             
-            #app-root, .modal-overlay {
-                display: none !important;
-            }
+            #app-root, .modal-overlay { display: none !important; }
 
             #print-area { 
                 display: block !important; 
-                position: absolute !important; 
-                left: 0 !important; 
-                top: 0 !important; 
-                width: 75mm !important; 
-                max-width: 100% !important;
-                margin: 0 auto !important;
-                padding: 0 !important;
+                position: relative !important; 
+                width: 100% !important; /* Que ocupe el 100% del papel de la impresora */
+                max-width: 320px !important; /* Evita que crezca más del ancho térmico */
+                margin: 0 auto !important; /* Centrado */
+                padding: 2mm 4mm !important; /* Respiro para hardware */
                 color: black !important; 
                 font-family: 'Courier New', Courier, monospace !important;
-                font-size: 12px !important;
-                line-height: 1.2 !important;
-                white-space: pre !important; /* MANTIENE LOS ESPACIOS EXACTOS */
+                font-size: 12px !important; /* Tamaño legible y seguro */
             }
+
+            /* Forzamos el comportamiento estricto de tablas */
+            .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+            .p-table td, .p-table th { padding: 2px 0 !important; vertical-align: top !important; overflow: hidden !important; white-space: nowrap !important; }
+            .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
         }
     </style>
 </head>
@@ -213,149 +208,60 @@
 <div id="app-root">
     <nav id="sidebar">
         <div class="brand-logo">QUINTOPOS</div>
-        <button class="nav-btn active" data-view="pos-view">
-            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-            Ventas
-        </button>
-        <button class="nav-btn" data-view="admin-view">
-            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            Productos
-        </button>
+        <button class="nav-btn active" data-view="pos-view"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>Ventas</button>
+        <button class="nav-btn" data-view="admin-view"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>Productos</button>
     </nav>
 
     <div id="main-container">
-        <div id="mobile-header">
-            <span class="mobile-brand">QUINTOPOS</span>
-        </div>
-
+        <div id="mobile-header"><span class="mobile-brand">QUINTOPOS</span></div>
         <div id="pos-view" class="view active">
             <div id="products-area">
-                
-                <div class="search-bar-container">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
-                </div>
-
+                <div class="search-bar-container"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off"></div>
                 <div id="categories-bar"></div>
                 <div id="products-grid"></div>
-                
                 <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
-                    <div class="fab-top">
-                        <span style="display:flex; align-items:center; gap:8px;">
-                            <span class="badge" id="mobile-cart-count">0</span>
-                            <span>Ver Pedido</span>
-                        </span>
-                        <span id="mobile-cart-total">0,00 €</span>
-                    </div>
+                    <div class="fab-top"><span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span><span id="mobile-cart-total">0,00 €</span></div>
                     <div class="fab-bottom" id="mobile-cart-preview">Añade productos para empezar</div>
                 </button>
             </div>
             
             <div id="ticket-panel">
-                <div class="ticket-header">
-                    <h2>Pedido Actual</h2>
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button>
-                        <button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button>
-                    </div>
-                </div>
+                <div class="ticket-header"><h2>Pedido Actual</h2><div style="display:flex; align-items:center; gap:15px;"><button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button><button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button></div></div>
                 <div id="ticket-items"></div>
-                <div class="ticket-footer">
-                    <div class="total-row">
-                        <span>Total</span>
-                        <span id="ticket-total">0,00 €</span>
-                    </div>
-                    <button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button>
-                </div>
+                <div class="ticket-footer"><div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div><button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button></div>
             </div>
         </div>
 
         <div id="admin-view" class="view">
-            <div class="admin-header">
-                <h2>Gestión de Productos</h2>
-                <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Nombre</th><th>Categoría</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead>
-                    <tbody id="admin-list"></tbody>
-                </table>
-            </div>
+            <div class="admin-header"><h2>Gestión de Productos</h2><button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button></div>
+            <div class="table-container"><table><thead><tr><th>Nombre</th><th>Categoría</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead><tbody id="admin-list"></tbody></table></div>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modal-pay">
     <div class="modal">
-        <div class="modal-header">
-            <h3>Pago en efectivo</h3>
-            <button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button>
-        </div>
+        <div class="modal-header"><h3>Pago en efectivo</h3><button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
         <div class="modal-body">
-            
-            <div class="order-summary-box">
-                <div class="lbl-title">Resumen del pedido</div>
-                <div class="pay-items-list" id="pay-items-list"></div>
-                <div class="summary-total">
-                    <span>Total</span>
-                    <span id="pay-total-val">0,00 €</span>
-                </div>
-            </div>
-
-            <div class="input-section">
-                <div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div>
-                <div class="input-group">
-                    <span class="currency">€</span>
-                    <input type="number" id="cash-input" step="0.01" placeholder="0.00">
-                </div>
-                <div class="quick-grid" id="quick-btns"></div>
-            </div>
-
-            <div class="change-card">
-                <span class="lbl">Cambio</span>
-                <span class="val" id="pay-change-val">0,00 €</span>
-            </div>
-
+            <div class="order-summary-box"><div class="lbl-title">Resumen del pedido</div><div class="pay-items-list" id="pay-items-list"></div><div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div></div>
+            <div class="input-section"><div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div><div class="input-group"><span class="currency">€</span><input type="number" id="cash-input" step="0.01" placeholder="0.00"></div><div class="quick-grid" id="quick-btns"></div></div>
+            <div class="change-card"><span class="lbl">Cambio</span><span class="val" id="pay-change-val">0,00 €</span></div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-cancel" onclick="document.getElementById('modal-pay').style.display='none'">Cancelar</button>
-            <button class="btn-confirm" id="btn-confirm-pay" disabled onclick="window.pos.finish()">✓ Confirmar e imprimir</button>
-        </div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('modal-pay').style.display='none'">Cancelar</button><button class="btn-confirm" id="btn-confirm-pay" disabled onclick="window.pos.finish()">✓ Confirmar e imprimir</button></div>
     </div>
 </div>
 
 <div class="modal-overlay" id="product-modal">
     <div class="modal" style="max-width: 400px;">
-        <div class="modal-header">
-            <h3 id="product-modal-title">Añadir Producto</h3>
-            <button class="close-x" onclick="window.pos.closeProductModal()">×</button>
-        </div>
+        <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
         <div class="modal-body" style="padding-bottom:0;">
             <input type="hidden" id="form-id">
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="form-name" autocomplete="off" placeholder="Ej. Café Solo">
-            </div>
-            <div class="form-group">
-                <label>Categoría</label>
-                <input type="text" id="form-category" autocomplete="off" placeholder="Ej. Bebidas">
-            </div>
-            <div class="form-group">
-                <label>IVA Aplicable</label>
-                <select id="form-iva">
-                    <option value="10">10% (Comida / Menús / Bebidas sin alcohol)</option>
-                    <option value="21">21% (Bebidas alcohólicas)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Precio con IVA (€)</label>
-                <input type="number" id="form-price" step="0.01" min="0" placeholder="0.00">
-            </div>
+            <div class="form-group"><label>Nombre</label><input type="text" id="form-name" autocomplete="off" placeholder="Ej. Café Solo"></div>
+            <div class="form-group"><label>Categoría</label><input type="text" id="form-category" autocomplete="off" placeholder="Ej. Bebidas"></div>
+            <div class="form-group"><label>IVA Aplicable</label><select id="form-iva"><option value="10">10% (Comida / Menús / Bebidas sin alcohol)</option><option value="21">21% (Bebidas alcohólicas)</option></select></div>
+            <div class="form-group"><label>Precio con IVA (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
         </div>
-        <div class="modal-footer" style="padding-top:20px;">
-            <button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button>
-            <button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar</button>
-        </div>
+        <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar</button></div>
     </div>
 </div>
 
@@ -393,6 +299,19 @@ class POS {
             const snap = await db.collection('products').get();
             this.products = [];
             snap.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
+            
+            if(this.products.length === 0) {
+                const defaults = [
+                    {name:'MENÚ ESENCIA DE MEDIODÍA', price:38.00, category:'Menús', iva:10},
+                    {name:'TIERRA TRADICION E', price:65.00, category:'Platos', iva:10},
+                    {name:'AGUA SOSTENIBLE', price:3.90, category:'Bebidas', iva:10},
+                    {name:'CERVEZA ARTESANA', price:3.50, category:'Bebidas', iva:21}
+                ];
+                for(const p of defaults) {
+                    const docRef = await db.collection('products').add(p);
+                    this.products.push({ id: docRef.id, ...p });
+                }
+            }
         } catch (e) { console.error("Error Firebase:", e); }
         this.render();
     }
@@ -515,20 +434,13 @@ class POS {
         document.getElementById('btn-confirm-pay').disabled = change < 0;
     }
 
-    // Función auxiliar para rellenar espacios en la cadena y alinear el texto de impresión
-    padString(str, length, alignRight = false) {
-        str = String(str);
-        if (str.length >= length) return str.substring(0, length);
-        if (alignRight) return ' '.repeat(length - str.length) + str;
-        return str + ' '.repeat(length - str.length);
-    }
-
     finish() {
         const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
         const cashStr = document.getElementById('cash-input').value;
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
+        // --- CÁLCULO DE IMPUESTOS ---
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
 
@@ -543,88 +455,115 @@ class POS {
         const rnd = Math.floor(Math.random() * 90000) + 10000;
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
         
-        // --- CREACIÓN DEL TICKET COMO TEXTO PREFORMATEADO ---
-        // Asumimos 42 caracteres de ancho para impresoras de 80mm
-        const LINE_WIDTH = 42;
-        let t = "";
-
-        // Cabecera Centrada
-        const title = "EL QUINTO SABOR";
-        t += this.padString(title, LINE_WIDTH, true).substring(0, Math.floor((LINE_WIDTH + title.length) / 2)) + "\n";
+        // ========================================================
+        // TICKET DEFINITIVO (DISEÑO BLINDADO PARA SAFARI AIRPRINT)
+        // Se usan tablas exactas con "table-layout: fixed"
+        // ========================================================
         
-        const addr1 = "Avda. Quitapesares, 17";
-        t += this.padString(addr1, LINE_WIDTH, true).substring(0, Math.floor((LINE_WIDTH + addr1.length) / 2)) + "\n";
+        let h = `
+        <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
+            <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 3px;">EL QUINTO SABOR</div>
+            Avda. Quitapesares, 17<br>
+            28670 Villaviciosa Madrid<br>
+            CIF: B87650776
+        </div>
         
-        const addr2 = "28670 Villaviciosa Madrid";
-        t += this.padString(addr2, LINE_WIDTH, true).substring(0, Math.floor((LINE_WIDTH + addr2.length) / 2)) + "\n";
+        <table class="p-table" style="margin-bottom: 8px;">
+            <tr>
+                <td style="text-align: left; width: 50%;">FACT.SIMPLIFICADA<br>T001/${rnd}</td>
+                <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA 9</td>
+            </tr>
+        </table>
         
-        const cif = "CIF: B87650776";
-        t += this.padString(cif, LINE_WIDTH, true).substring(0, Math.floor((LINE_WIDTH + cif.length) / 2)) + "\n\n";
-
-        // Datos factura
-        t += this.padString("FACT.SIMPLIFICADA", 20) + this.padString("FECHA " + dateStr, 22, true) + "\n";
-        t += this.padString("T001/" + rnd, 20) + this.padString("SALA 3 MESA 9", 22, true) + "\n\n";
-
-        // Cabecera de tabla
-        t += "UDS DESCRIPCION       PVP      IMPORTE\n";
-        t += "-".repeat(LINE_WIDTH) + "\n";
-
-        // Productos
+        <table class="p-table">
+            <tr style="border-bottom: 1px dashed black;">
+                <th style="text-align: left; width: 12%; padding-bottom: 4px; font-weight: normal;">UDS</th>
+                <th style="text-align: left; width: 45%; padding-bottom: 4px; font-weight: normal;">DESCRIPCION</th>
+                <th style="text-align: right; width: 18%; padding-bottom: 4px; font-weight: normal;">PVP</th>
+                <th style="text-align: right; width: 25%; padding-bottom: 4px; font-weight: normal;">IMPORTE</th>
+            </tr>
+        `;
+        
         this.cart.forEach(i => {
-            const uds = this.padString(i.qty, 3);
-            const desc = this.padString(i.name.toUpperCase(), 16);
-            const pvp = this.padString(i.price.toFixed(2).replace('.', ','), 9, true);
-            const imp = this.padString((i.price * i.qty).toFixed(2).replace('.', ',') + " €", 14, true);
-            t += `${uds} ${desc} ${pvp}${imp}\n`;
+            h += `
+            <tr>
+                <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 16)}</td>
+                <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                <td style="text-align: right; padding-top: 4px;">${(i.price*i.qty).toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
         });
-
-        t += "-".repeat(LINE_WIDTH) + "\n\n";
-
-        // Bloque Impuestos y Total
-        t += "BASE IMP  IVA   CUOTA   TOTAL \n";
         
-        // Array para las líneas de IVA
-        let taxLines = [];
+        h += `
+        </table>
+        <div class="p-dashed"></div>
+        
+        <table class="p-table" style="margin-bottom: 12px;">
+            <tr>
+                <td style="width: 55%; vertical-align: bottom;">
+                    <table class="p-table">
+                        <tr>
+                            <td style="text-align: left; width: 40%; font-weight: bold;">BASE IMP</td>
+                            <td style="text-align: center; width: 20%; font-weight: bold;">IVA</td>
+                            <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
+                        </tr>
+        `;
+
         if(bases[10] > 0) {
-            let b = this.padString(bases[10].toFixed(2).replace('.', ','), 8);
-            let c = this.padString(cuotas[10].toFixed(2).replace('.', ','), 7);
-            taxLines.push(`${b}  10%   ${c}`);
+            h += `
+                        <tr>
+                            <td style="text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</td>
+                            <td style="text-align: center;">10%</td>
+                            <td style="text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</td>
+                        </tr>`;
         }
+
         if(bases[21] > 0) {
-            let b = this.padString(bases[21].toFixed(2).replace('.', ','), 8);
-            let c = this.padString(cuotas[21].toFixed(2).replace('.', ','), 7);
-            taxLines.push(`${b}  21%   ${c}`);
+            h += `
+                        <tr>
+                            <td style="text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</td>
+                            <td style="text-align: center;">21%</td>
+                            <td style="text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</td>
+                        </tr>`;
         }
 
-        // Combinar IVA con el TOTAL gigante
-        const totStr = total.toFixed(2).replace('.', ',') + " €";
-        const paddedTotStr = this.padString(totStr, 14, true);
+        h += `
+                    </table>
+                </td>
+                <td style="width: 45%; text-align: right; vertical-align: bottom;">
+                    <div style="font-size: 14px; margin-bottom: 2px;">TOTAL</div>
+                    <div style="font-size: 18px; font-weight: bold;">${total.toFixed(2).replace('.', ',')} €</div>
+                </td>
+            </tr>
+        </table>
 
-        if (taxLines.length === 1) {
-            t += taxLines[0] + paddedTotStr + "\n";
-        } else if (taxLines.length === 2) {
-            t += taxLines[0] + paddedTotStr + "\n";
-            t += taxLines[1] + "\n";
-        }
+        <div class="p-dashed"></div>
+
+        <table class="p-table" style="margin-bottom: 15px;">
+            <tr>
+                <td style="width: 40%;"></td>
+                <td style="width: 30%; text-align: right;">ENTREGADO</td>
+                <td style="width: 30%; text-align: right;">CAMBIO</td>
+            </tr>
+            <tr>
+                <td style="text-align: right; padding-right: 15px;">TA CREDITO</td>
+                <td style="text-align: right;">${cash.toFixed(2).replace('.', ',')}</td>
+                <td style="text-align: right;">${change.toFixed(2).replace('.', ',')} €</td>
+            </tr>
+        </table>
         
-        t += "\n" + "-".repeat(LINE_WIDTH) + "\n\n";
-
-        // Pagos
-        t += this.padString("", 18) + this.padString("ENTREGADO", 12, true) + this.padString("CAMBIO", 12, true) + "\n";
-        const cashStrFmt = cash.toFixed(2).replace('.', ',');
-        const changeStrFmt = change.toFixed(2).replace('.', ',') + " €";
-        t += this.padString("TA CREDITO", 18) + this.padString(cashStrFmt, 12, true) + this.padString(changeStrFmt, 12, true) + "\n\n";
-
-        // Pie
-        const footer = "*** GRACIAS POR SU VISITA ***";
-        t += this.padString(footer, LINE_WIDTH, true).substring(0, Math.floor((LINE_WIDTH + footer.length) / 2)) + "\n";
-        t += "ATENDIDO POR: SAMUEL\n";
-
-        document.getElementById('print-area').textContent = t;
+        <div style="text-align: center; line-height: 1.2;">
+            *** GRACIAS POR SU VISITA ***<br>
+            <div style="text-align: left; margin-top: 5px;">ATENDIDO POR: SAMUEL</div>
+        </div>
+        `;
+        
+        document.getElementById('print-area').innerHTML = h;
         
         // Forzamos dibujo en pantalla oculto
         document.getElementById('print-area').offsetHeight;
-
+        
+        // Disparo DIRECTO
         window.print();
     }
 
