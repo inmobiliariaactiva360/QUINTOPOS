@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QUINTOPOS - Elite</title>
+    <title>QUINTOPOS - Premium</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -12,15 +12,22 @@
         :root {
             --primary: #4f46e5;
             --primary-light: #6366f1;
+            --primary-dark: #3730a3;
             --bg-gradient: linear-gradient(135deg, #f4f7f6 0%, #e2e8f0 100%);
+            --surface: rgba(255, 255, 255, 0.75);
+            --surface-solid: #ffffff;
             --text-main: #111827;
             --text-muted: #64748b;
+            --border-glass: rgba(255, 255, 255, 0.6);
             --sidebar-bg: #0f172a;
+            --sidebar-active: rgba(255, 255, 255, 0.15);
             --checkout-rust: #c25a42;
+            --checkout-green-bg: #eaf5ee;
+            --checkout-green-text: #41815d;
             --checkout-btn-green: #abcbc0;
             --checkout-border: #e5e7eb;
             --danger: #ef4444;
-            --invitation: #f59e0b;
+            --radius-lg-modal: 20px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -29,9 +36,10 @@
             html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         }
 
-        button { cursor: pointer; border: none; outline: none; transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
-        button:active { transform: scale(0.95); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button { cursor: pointer; border: none; outline: none; transition: all 0.1s; }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        input, select { user-select: auto; }
 
         #app-root { display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; }
         #sidebar { width: 90px; background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 50; flex-shrink: 0; }
@@ -40,82 +48,129 @@
         .nav-btn svg { width: 28px; height: 28px; fill: currentColor; }
         .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
 
-        #main-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
+        #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
+        #mobile-header { display: none; padding: 16px 24px; background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--checkout-border); z-index: 20; align-items: center; justify-content: center; width: 100%; }
+        .mobile-brand { font-size: 18px; font-weight: 900; color: var(--text-main); letter-spacing: 1px;}
         .view { flex: 1; display: none; height: 100%; overflow: hidden; width: 100%; }
         .view.active { display: flex; }
-
         #pos-view { flex-direction: row; width: 100%; }
-        #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; }
-        
+
+        #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; min-width: 0; }
         .search-bar-container { margin-bottom: 15px; position: relative; flex-shrink: 0; }
-        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; outline: none; }
+        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
 
         #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; }
-        .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; border: 1px solid rgba(255,255,255,0.6); white-space: nowrap; }
+        #categories-bar::-webkit-scrollbar { display: none; }
+        .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; font-size: 15px; white-space: nowrap; border: 1px solid var(--border-glass); }
         .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
 
         #products-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; overflow-y: auto; align-content: start; padding-bottom: 100px; }
-        .product-card { background: rgba(255,255,255,0.8); border-radius: 22px; padding: 20px; height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .product-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
+        .product-card { background: rgba(255,255,255,0.8); border-radius: 22px; padding: 20px; height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease; }
+        .product-card:active { transform: scale(0.95); background: white; }
+        .product-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
         .product-price { font-size: 18px; color: var(--checkout-rust); font-weight: 900; }
 
-        #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; z-index: 40; }
+        #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.02); z-index: 40; transition: transform 0.3s ease; }
+        .ticket-header { padding: 25px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .ticket-header h2 { font-size: 20px; font-weight: 900; color: var(--text-main); margin: 0; }
+        .close-ticket-btn { display: none; font-size: 28px; color: var(--text-main); background: transparent; line-height: 1; }
+        .clear-btn { color: var(--danger); background: transparent; font-weight: 800; font-size: 13px; }
         #ticket-items { flex: 1; overflow-y: auto; padding: 10px 25px; }
         .ticket-item { display: flex; flex-direction: column; padding: 18px 0; border-bottom: 1px dashed #e2e8f0; gap: 12px; }
-        .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; align-items: flex-start; }
+        .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--text-main); }
         .item-controls { display: flex; justify-content: space-between; align-items: center; }
-        .qty-controls { display: flex; align-items: center; background: #f1f5f9; border-radius: 10px; }
-        .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 20px; font-weight: bold; color: var(--sidebar-bg); }
-        .qty-val { width: 30px; text-align: center; font-weight: 800; }
-        
-        /* BOTÓN ESTRELLA MEJORADO */
-        .invitation-btn { width: 44px; height: 40px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 22px; transition: 0.2s; }
-        .invitation-btn.active { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
-        .inv-badge { background: #fef3c7; color: #d97706; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 5px; vertical-align: middle;}
+        .qty-controls { display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
+        .qty-val { width: 36px; text-align: center; font-weight: 800; font-size: 16px; }
+        .item-total { font-size: 16px; font-weight: 900; color: var(--text-muted); }
+        .ticket-footer { padding: 25px; background: white; border-top: 1px solid var(--checkout-border); }
+        .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin-bottom: 20px; color: var(--text-main); }
+        .checkout-btn { width: 100%; padding: 22px; background: #eac4ba; color: white; font-size: 20px; font-weight: 800; border-radius: 12px; transition: 0.2s; }
+        .checkout-btn:not(:disabled) { background: var(--checkout-rust); }
 
-        .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin: 20px 25px; }
-        .checkout-btn { width: calc(100% - 50px); margin: 0 25px 25px; padding: 22px; background: var(--checkout-rust); color: white; font-size: 20px; font-weight: 800; border-radius: 12px; }
-
-        /* BOTÓN Z ESPECTACULAR */
-        .btn-z-pro {
-            width: 55px; height: 55px; background: var(--danger); color: white;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 900; box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
-            border: 3px solid white; transition: 0.3s;
-        }
-        .btn-z-pro:hover { transform: scale(1.1); background: #dc2626; }
-
-        .admin-section { display: flex; flex-direction: column; gap: 20px; }
-        #admin-view { flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 50px; background: transparent; }
-        .table-container { background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--checkout-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 18px 20px; border-bottom: 1px solid var(--checkout-border); text-align: left; }
-        th { background: #f8fafc; font-weight: 800; font-size: 12px; text-transform: uppercase; color: var(--text-muted); }
+        #mobile-cart-fab { display: none; position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 400px; background: var(--checkout-rust); color: white; padding: 14px 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(194, 90, 66, 0.4); z-index: 30; flex-direction: column; text-align: left; gap: 4px; }
+        .fab-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 18px; font-weight: 800; }
+        .fab-bottom { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #mobile-cart-fab .badge { background: white; color: var(--checkout-rust); padding: 2px 8px; border-radius: 20px; font-size: 14px; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal { background: #ffffff; border-radius: 24px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
-        .modal-header { padding: 24px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 24px; }
-        .modal-footer { padding: 0 24px 24px; display: flex; gap: 12px; }
-        .checkout-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--checkout-border); font-size: 16px; background: #f9fafb; outline: none; }
+        .modal { background: #ffffff; border-radius: var(--radius-lg-modal); width: 100%; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--checkout-border); }
+        .modal-header h3 { font-size: 18px; font-weight: 700; color: #111; }
+        .close-x { background: white; border: 1px solid var(--checkout-border); width: 32px; height: 32px; border-radius: 8px; color: #888; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto;}
+        
+        .order-summary-box { border: 1px solid var(--checkout-border); border-radius: 8px; padding: 16px; background: #ffffff; }
+        .lbl-title { font-size: 11px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
+        .pay-items-list { max-height: 100px; overflow-y: auto; margin-bottom: 10px; }
+        .item-row { display: flex; justify-content: space-between; font-size: 14px; color: #374151; margin-bottom: 8px; }
+        .item-qty { color: #9ca3af; margin-left: 8px; font-size: 13px; font-family: monospace;}
+        .summary-total { display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px solid var(--checkout-border); padding-top: 16px; font-size: 22px; font-weight: 800; align-items: center;}
+        .summary-total span:first-child { color: #111; font-size: 18px;}
+        .summary-total span:last-child { color: var(--checkout-rust); }
+        
+        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; appearance: none; -webkit-appearance: none; }
 
-        #print-area { display: none; }
-        @media print {
-            @page { margin: 0; }
-            html, body { position: static !important; background: white !important; }
-            #app-root, .modal-overlay { display: none !important; }
-            #print-area { display: block !important; width: 72mm !important; margin: 0 auto !important; color: black !important; font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; }
-            .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-            .p-table td { padding: 2px 0 !important; vertical-align: top !important; }
-            .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
+        .input-section { display: flex; flex-direction: column; gap: 8px; }
+        .input-group { position: relative; }
+        .input-group .currency { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 600; color: #9ca3af; }
+        .input-group input { width: 100%; padding: 16px 16px 16px 40px; font-size: 26px; font-weight: 700; border: 2px solid var(--checkout-rust); border-radius: 8px; outline: none; color: #1f2937; letter-spacing: -0.5px; }
+        .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px;}
+        .quick-btn { padding: 12px 6px; background: white; border: 1px solid var(--checkout-border); border-radius: 6px; font-weight: 600; font-size: 14px; color: #4b5563; }
+        .change-card { background: var(--checkout-green-bg); padding: 16px 20px; border-radius: 8px; border: 1px solid #d1e5d9; display: flex; justify-content: space-between; align-items: center; }
+        .change-card .lbl { color: var(--checkout-green-text); font-weight: 600; font-size: 14px; }
+        .change-card .val { color: var(--checkout-green-text); font-weight: 800; font-size: 24px; letter-spacing: -1px;}
+        .modal-footer { padding: 0 24px 24px 24px; display: flex; gap: 12px; }
+        .btn-cancel { flex: 1; padding: 14px; background: white; border: 1px solid var(--checkout-border); border-radius: 8px; font-weight: 600; color: #4b5563; font-size: 15px; }
+        .btn-confirm { flex: 1.8; padding: 14px; background: var(--checkout-btn-green); color: white; border-radius: 8px; font-weight: 700; font-size: 15px; border: none;}
+        .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;}
+        .form-group label { font-weight: 700; color: var(--text-main); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .form-group input, .form-group select { padding: 14px; font-size: 15px; border: 1px solid var(--checkout-border); border-radius: 8px; background: #f9fafb; font-weight: 600; color: #1f2937; outline: none; appearance: none; -webkit-appearance: none;}
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; }
+
+        #ticket-viewer-content { font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.4; color: #111; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px dashed var(--checkout-border); white-space: pre-wrap; }
+
+        #admin-view { flex-direction: column; padding: 32px; overflow-y: auto; background: transparent; gap: 40px;}
+        .admin-section { display: flex; flex-direction: column; gap: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; }
+        .admin-header h2 { font-size: 24px; font-weight: 800; }
+        .btn-primary { background: #111; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+        .table-container { background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--checkout-border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 16px 20px; border-bottom: 1px solid var(--checkout-border); font-size: 14px; color: var(--text-main); }
+        th { background: #f9fafb; font-weight: 800; text-transform: uppercase; font-size: 12px; color: var(--text-muted); }
+
+        @media screen and (max-width: 900px) {
+            #app-root { flex-direction: column; width: 100%; height: 100%; }
+            #sidebar { width: 100%; height: 75px; flex-direction: row; justify-content: space-evenly; padding: 0; border-top: 1px solid rgba(255,255,255,0.1); border-right: none; order: 3; z-index: 60; }
+            .brand-logo { display: none; }
+            .nav-btn { width: auto; height: 100%; flex: 1; border-radius: 0; }
+            #main-container { width: 100%; order: 2; flex: 1; display: flex; flex-direction: column; }
+            #mobile-header { display: flex; width: 100%; }
+            #products-area { padding: 16px; width: 100%; }
+            #products-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding-bottom: 80px; width: 100%; }
+            #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); z-index: 70; background: white; }
+            #ticket-panel.open { transform: translateX(0); }
+            .close-ticket-btn { display: block; }
+            #mobile-cart-fab { display: flex; }
+            #admin-view { padding: 16px; padding-bottom: 80px; width: 100%; }
+            .table-container { border-radius: 12px; overflow-x: auto; width: 100%; }
+            th, td { padding: 12px 16px; font-size: 14px; }
         }
 
-        @media (max-width: 900px) {
-            #app-root { flex-direction: column; }
-            #sidebar { width: 100%; height: 75px; flex-direction: row; order: 3; }
-            #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); }
-            #ticket-panel.open { transform: translateX(0); }
+        #print-area { display: none; }
+        
+        @media print {
+            @page { margin: 0; } 
+            html, body { position: static !important; overflow: visible !important; height: auto !important; width: 100% !important; background: white !important; margin: 0 !important; padding: 0 !important; }
+            #app-root, .modal-overlay { display: none !important; }
+            #print-area { display: block !important; position: relative !important; width: 100% !important; max-width: 320px !important; margin: 0 auto !important; padding: 2mm 4mm !important; color: black !important; font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; }
+            .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+            .p-table td, .p-table th { padding: 2px 0 !important; vertical-align: top !important; overflow: hidden !important; white-space: nowrap !important; }
+            .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
         }
     </style>
 </head>
@@ -129,42 +184,62 @@
     </nav>
 
     <div id="main-container">
+        <div id="mobile-header"><span class="mobile-brand">QUINTOPOS</span></div>
         <div id="pos-view" class="view active">
             <div id="products-area">
-                <div class="search-bar-container">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
-                </div>
+                <div class="search-bar-container"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off"></div>
                 <div id="categories-bar"></div>
                 <div id="products-grid"></div>
+                <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
+                    <div class="fab-top"><span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span><span id="mobile-cart-total">0,00 €</span></div>
+                    <div class="fab-bottom" id="mobile-cart-preview">Añade productos para empezar</div>
+                </button>
             </div>
             
             <div id="ticket-panel">
-                <div style="padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <h2>Pedido Actual</h2>
-                    <button onclick="window.pos.clearCart()" style="color:var(--danger); font-weight:bold; background:none; font-size:13px;">VACIAR</button>
-                </div>
+                <div class="ticket-header"><h2>Pedido Actual</h2><div style="display:flex; align-items:center; gap:15px;"><button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button><button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button></div></div>
                 <div id="ticket-items"></div>
-                <div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div>
-                <button class="checkout-btn" id="btn-pay" disabled onclick="window.pos.openPay()">COBRAR</button>
+                <div class="ticket-footer"><div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div><button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button></div>
             </div>
         </div>
 
         <div id="admin-view" class="view">
             <div class="admin-section">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2>Historial de Ventas</h2>
-                    <button class="btn-z-pro" onclick="window.pos.generateZReport()" title="Cierre de Caja">Z</button>
+                <div class="admin-header">
+                    <h2>Historial de Tickets</h2>
                 </div>
-                <div class="table-container"><table><thead><tr><th>Ticket</th><th>Fecha</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="orders-list"></tbody></table></div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Ticket</th><th>Fecha</th><th>Hora</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead>
+                        <tbody id="orders-list"></tbody>
+                    </table>
+                </div>
             </div>
+
             <div class="admin-section">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Productos</h2><button onclick="window.pos.openProductModal()" style="background:#111; color:white; padding:10px 20px; border-radius:8px; font-weight:700;">+ NUEVO</button></div>
-                <div class="table-container"><table><thead><tr><th>Nombre</th><th>Cat.</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead><tbody id="admin-list"></tbody></table></div>
+                <div class="admin-header">
+                    <h2>Gestión de Productos</h2>
+                    <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>Categoría</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead>
+                        <tbody id="admin-list"></tbody>
+                    </table>
+                </div>
             </div>
+            
             <div class="admin-section">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Camareros</h2><button onclick="window.pos.addWaiter()" style="background:#111; color:white; padding:10px 20px; border-radius:8px; font-weight:700;">+ NUEVO</button></div>
-                <div class="table-container"><table><thead><tr><th>Nombre</th><th>Acciones</th></tr></thead><tbody id="waiters-list"></tbody></table></div>
+                <div class="admin-header">
+                    <h2>Gestión de Camareros</h2>
+                    <button class="btn-primary" onclick="window.pos.addWaiter()">+ Añadir Camarero</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>Acciones</th></tr></thead>
+                        <tbody id="waiters-list"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -172,32 +247,69 @@
 
 <div class="modal-overlay" id="modal-pay">
     <div class="modal">
-        <div class="modal-header"><h3>Finalizar Venta</h3><button onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
+        <div class="modal-header"><h3>Pago en efectivo</h3><button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
         <div class="modal-body">
-            <div class="order-summary-box"><div class="lbl-title">Importe Total</div><div id="pay-total-val" style="font-size:32px; font-weight:900; color:var(--checkout-rust);">0,00 €</div></div>
-            <div style="display: flex; gap: 10px; margin: 20px 0;">
-                <select id="waiter-select" class="checkout-input"></select>
-                <select id="table-select" class="checkout-input">
-                    <option value="—">Mesa --</option><option value="1">Mesa 1</option><option value="2">Mesa 2</option><option value="3">Mesa 3</option><option value="6">Mesa 6</option><option value="7">Mesa 7</option><option value="8">Mesa 8</option><option value="9">Mesa 9</option><option value="10">Mesa 10</option><option value="14">Mesa 14</option><option value="15">Mesa 15</option><option value="16">Mesa 16</option>
-                </select>
+            <div class="order-summary-box"><div class="lbl-title">Resumen del pedido</div><div class="pay-items-list" id="pay-items-list"></div><div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div></div>
+            
+            <div style="display: flex; gap: 12px; margin-top: -5px;">
+                <div class="input-section" style="flex: 2;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Atendido por</div>
+                    <select id="waiter-select" class="checkout-input"></select>
+                </div>
+                <div class="input-section" style="flex: 1;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Mesa</div>
+                    <select id="table-select" class="checkout-input">
+                        <option value="—">--</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                    </select>
+                </div>
             </div>
-            <input type="number" id="cash-input" class="checkout-input" style="font-size:24px; text-align:center;" placeholder="0,00 € Recibido">
+
+            <div class="input-section"><div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div><div class="input-group"><span class="currency">€</span><input type="number" id="cash-input" step="0.01" placeholder="0.00"></div><div class="quick-grid" id="quick-btns"></div></div>
+            <div class="change-card"><span class="lbl">Cambio</span><span class="val" id="pay-change-val">0,00 €</span></div>
         </div>
-        <div class="modal-footer"><button style="width:100%; height:60px; background:var(--checkout-btn-green); color:#41815d; font-weight:800; border-radius:15px;" onclick="window.pos.finish()">✓ CONFIRMAR E IMPRIMIR</button></div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('modal-pay').style.display='none'">Cancelar</button><button class="btn-confirm" id="btn-confirm-pay" disabled onclick="window.pos.finish()">✓ Confirmar e imprimir</button></div>
     </div>
 </div>
 
 <div class="modal-overlay" id="product-modal">
-    <div class="modal">
-        <div class="modal-header"><h3 id="product-modal-title">Producto</h3><button onclick="window.pos.closeProductModal()">×</button></div>
-        <div class="modal-body">
-            <div style="display:flex; flex-direction:column; gap:15px;">
-                <input type="text" id="form-name" class="checkout-input" placeholder="Nombre del producto">
-                <select id="form-category" class="checkout-input"><option value="MENÚS">MENÚS (10% IVA)</option><option value="BEBIDAS">BEBIDAS (21% IVA)</option></select>
-                <input type="number" id="form-price" class="checkout-input" step="0.01" placeholder="Precio con IVA">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
+        <div class="modal-body" style="padding-bottom:0;">
+            <input type="hidden" id="form-id">
+            <div class="form-group"><label>Nombre</label><input type="text" id="form-name" autocomplete="off" placeholder="Ej. Café Solo"></div>
+            <div class="form-group">
+                <label>Categoría e IVA</label>
+                <select id="form-category">
+                    <option value="MENÚS">MENÚS y COMIDA (10% IVA)</option>
+                    <option value="BEBIDAS">BEBIDAS (21% IVA)</option>
+                </select>
             </div>
+            <div class="form-group"><label>Precio con IVA incluido (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
         </div>
-        <div class="modal-footer"><button style="width:100%; height:50px; background:var(--sidebar-bg); color:white; border-radius:12px;" onclick="window.pos.saveProduct()">GUARDAR</button></div>
+        <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="viewer-modal">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="viewer-modal-title">Ticket</h3><button class="close-x" onclick="document.getElementById('viewer-modal').style.display='none'">×</button></div>
+        <div class="modal-body" style="padding-bottom:0;">
+            <div id="ticket-viewer-content"></div>
+        </div>
+        <div class="modal-footer" style="padding-top:20px;">
+            <button class="btn-cancel" style="width: 100%; flex: none;" onclick="document.getElementById('viewer-modal').style.display='none'">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -218,148 +330,438 @@ const db = firebase.firestore();
 
 class POS {
     constructor() {
-        this.products = []; this.cart = []; this.waiters = []; this.orders = [];
-        this.activeCat = 'Todo'; this.searchTerm = ''; this.nextTicketNumber = 76283;
+        this.products = [];
+        this.cart = [];
+        this.waiters = [];
+        this.orders = [];
+        this.activeCat = 'Todo';
+        this.searchTerm = '';
+        this.nextTicketNumber = 76283;
         this.init();
     }
 
     async init() {
         this.bindEvents();
-        db.collection('settings').doc('counter').onSnapshot(doc => { if(doc.exists) this.nextTicketNumber = doc.data().ticketNumber; });
-        db.collection('products').onSnapshot(snap => { this.products = snap.docs.map(d => ({id:d.id, ...d.data()})); this.render(); this.renderAdmin(); });
-        db.collection('waiters').onSnapshot(snap => { this.waiters = snap.docs.map(d => ({id:d.id, ...d.data()})); this.renderAdmin(); });
-        db.collection('orders').onSnapshot(snap => { this.orders = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.ticketNumber - a.ticketNumber); this.renderAdmin(); });
+        await this.loadData();
+    }
+
+    async loadData() {
+        try {
+            // Contador de tickets en tiempo real
+            db.collection('settings').doc('counter').onSnapshot(doc => {
+                if (doc.exists) { this.nextTicketNumber = doc.data().ticketNumber; }
+                else { db.collection('settings').doc('counter').set({ ticketNumber: 76283 }); this.nextTicketNumber = 76283; }
+            });
+
+            // Productos
+            const snapProducts = await db.collection('products').get();
+            this.products = [];
+            snapProducts.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
+
+            // Camareros
+            const snapWaiters = await db.collection('waiters').get();
+            this.waiters = [];
+            snapWaiters.forEach(doc => this.waiters.push({ id: doc.id, ...doc.data() }));
+            if (this.waiters.length === 0) {
+                const docRef = await db.collection('waiters').add({ name: 'SAMUEL' });
+                this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
+            }
+
+            // Historial de órdenes en tiempo real
+            db.collection('orders').orderBy('ticketNumber', 'desc').onSnapshot(snap => {
+                this.orders = [];
+                snap.forEach(doc => this.orders.push({ id: doc.id, ...doc.data() }));
+                this.renderAdmin();
+            });
+
+        } catch (e) { console.error("Error Firebase:", e); }
+
+        this.render();
+        this.renderAdmin();
     }
 
     bindEvents() {
         document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', e => {
             document.querySelectorAll('.nav-btn, .view').forEach(el => el.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-            document.getElementById(e.currentTarget.dataset.view).classList.add('active');
+            const target = e.currentTarget;
+            target.classList.add('active');
+            document.getElementById(target.dataset.view).classList.add('active');
+            if (target.dataset.view === 'pos-view') this.render();
+            else this.renderAdmin();
         }));
-        document.getElementById('search-input').addEventListener('input', e => { this.searchTerm = e.target.value.toLowerCase(); this.render(); });
-        window.addEventListener('afterprint', () => { this.clearCart(); document.getElementById('modal-pay').style.display='none'; });
+
+        document.getElementById('cash-input').addEventListener('input', () => this.updateChange());
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            this.searchTerm = e.target.value.toLowerCase();
+            this.render();
+        });
+
+        window.addEventListener('afterprint', () => {
+            this.clearCart();
+            document.getElementById('modal-pay').style.display = 'none';
+        });
     }
 
     render() {
         const cats = ['Todo', 'MENÚS', 'BEBIDAS'];
-        document.getElementById('categories-bar').innerHTML = cats.map(c => `<button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>`).join('');
+        document.getElementById('categories-bar').innerHTML = cats.map(c => `
+            <button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>
+        `).join('');
+
         let filtered = this.activeCat === 'Todo' ? this.products : this.products.filter(p => p.category === this.activeCat);
-        if (this.searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm));
-        document.getElementById('products-grid').innerHTML = filtered.map(p => `<div class="product-card" onclick="window.pos.addToCart('${p.id}')"><div class="product-name">${p.name}</div><div class="product-price">${p.price.toFixed(2).replace('.',',')} €</div></div>`).join('');
+        if (this.searchTerm) { filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm)); }
+
+        document.getElementById('products-grid').innerHTML = filtered.map(p => `
+            <div class="product-card" onclick="window.pos.addToCart('${p.id}')">
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">${p.price.toFixed(2).replace('.', ',')} €</div>
+            </div>
+        `).join('');
+
         this.updateCartUI();
     }
 
-    setCat(c) { this.activeCat = c; this.render(); }
+    setCat(c) { this.activeCat = c; document.getElementById('search-input').value = ''; this.searchTerm = ''; this.render(); }
 
     addToCart(id) {
         const p = this.products.find(x => x.id === id);
-        this.cart.push({...p, qty:1, isInvited: false});
+        const item = this.cart.find(i => i.id === id);
+        if (item) item.qty++; else this.cart.push({ ...p, qty: 1 });
         this.updateCartUI();
     }
 
-    toggleInvitation(index) { this.cart[index].isInvited = !this.cart[index].isInvited; this.updateCartUI(); }
-
-    updateCartQty(index, delta) {
-        this.cart[index].qty += delta;
-        if (this.cart[index].qty <= 0) this.cart.splice(index, 1);
-        this.updateCartUI();
+    updateCartQty(id, delta) {
+        const item = this.cart.find(i => i.id === id);
+        if (item) {
+            item.qty += delta;
+            if (item.qty <= 0) this.cart = this.cart.filter(i => i.id !== id);
+            this.updateCartUI();
+        }
     }
 
-    clearCart() { this.cart = []; this.updateCartUI(); }
+    clearCart() { this.cart = []; this.updateCartUI(); document.getElementById('ticket-panel').classList.remove('open'); }
 
     updateCartUI() {
-        const total = this.cart.reduce((s, i) => s + (i.isInvited ? 0 : i.price * i.qty), 0);
-        document.getElementById('ticket-total').textContent = total.toFixed(2).replace('.', ',') + ' €';
-        document.getElementById('btn-pay').disabled = this.cart.length === 0;
-
-        document.getElementById('ticket-items').innerHTML = this.cart.map((i, idx) => `
+        const container = document.getElementById('ticket-items');
+        container.innerHTML = this.cart.map(i => `
             <div class="ticket-item">
-                <div class="item-info">
-                    <span>${i.name} ${i.isInvited ? '<span class="inv-badge">INVITACIÓN</span>' : ''}</span>
-                    <span class="item-total ${i.isInvited ? 'is-invited' : ''}">${(i.price*i.qty).toFixed(2).replace('.',',')} €</span>
-                </div>
+                <div class="item-info"><span>${i.name}</span><span class="item-total">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</span></div>
                 <div class="item-controls">
                     <div class="qty-controls">
-                        <button class="qty-btn" onclick="window.pos.updateCartQty(${idx}, -1)">-</button>
+                        <button class="qty-btn" onclick="window.pos.updateCartQty('${i.id}', -1)">-</button>
                         <div class="qty-val">${i.qty}</div>
-                        <button class="qty-btn" onclick="window.pos.updateCartQty(${idx}, 1)">+</button>
+                        <button class="qty-btn" onclick="window.pos.updateCartQty('${i.id}', 1)">+</button>
                     </div>
-                    <button class="invitation-btn ${i.isInvited ? 'active' : ''}" onclick="window.pos.toggleInvitation(${idx})" title="Invitación">★</button>
                 </div>
             </div>
         `).join('');
+
+        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const count = this.cart.reduce((s, i) => s + i.qty, 0);
+        const totStr = total.toFixed(2).replace('.', ',') + ' €';
+
+        document.getElementById('ticket-total').textContent = totStr;
+        document.getElementById('mobile-cart-total').textContent = totStr;
+        document.getElementById('mobile-cart-count').textContent = count;
+
+        if (this.cart.length > 0) { document.getElementById('mobile-cart-preview').textContent = this.cart.map(i => `${i.qty}x ${i.name}`).join(', '); }
+        else { document.getElementById('mobile-cart-preview').textContent = 'Añade productos para empezar'; }
+
+        document.getElementById('btn-open-pay').disabled = total <= 0;
+        if (total <= 0) document.getElementById('ticket-panel').classList.remove('open');
     }
 
     openPay() {
-        const total = this.cart.reduce((s, i) => s + (i.isInvited ? 0 : i.price * i.qty), 0);
+        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
         document.getElementById('pay-total-val').textContent = total.toFixed(2).replace('.', ',') + ' €';
+        document.getElementById('pay-items-list').innerHTML = this.cart.map(i => `<div class="item-row"><span>${i.name.substring(0, 25)} <span class="item-qty">x${i.qty}</span></span><span>${(i.price * i.qty).toFixed(2).replace('.', ',')} €</span></div>`).join('');
+
+        document.getElementById('cash-input').value = '';
+        document.getElementById('pay-change-val').textContent = '0,00 €';
+
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
+        document.getElementById('table-select').value = '—';
+
+        let fast = [total];
+        let next5 = Math.ceil(total / 5) * 5; if (next5 > total) fast.push(next5);
+        let next10 = Math.ceil(total / 10) * 10; if (next10 > total && !fast.includes(next10)) fast.push(next10);
+        let next20 = Math.ceil(total / 20) * 20; if (next20 > total && !fast.includes(next20)) fast.push(next20);
+        [5, 10, 20, 50, 100, 200, 500].forEach(b => { if (b > total && !fast.includes(b)) fast.push(b); });
+
+        const uniqueFast = [...new Set(fast)].sort((a, b) => a - b).slice(0, 6);
+        document.getElementById('quick-btns').innerHTML = uniqueFast.map(v => `<button class="quick-btn" onclick="document.getElementById('cash-input').value='${v.toFixed(2)}'; window.pos.updateChange()">${v.toFixed(2).replace('.', ',')} €</button>`).join('');
+
         document.getElementById('modal-pay').style.display = 'flex';
     }
 
-    finish() {
-        const total = this.cart.reduce((s, i) => s + (i.isInvited ? 0 : i.price * i.qty), 0);
-        const waiter = document.getElementById('waiter-select').value;
-        const table = document.getElementById('table-select').value;
-        const ticketNum = this.nextTicketNumber;
-        const dateStr = new Date().toLocaleDateString('es-ES');
-
-        let bases = { 10: 0, 21: 0 }, cuotas = { 10: 0, 21: 0 };
-        this.cart.forEach(i => {
-            if(i.isInvited) return;
-            const lineTotal = i.price * i.qty;
-            const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
-            const base = lineTotal / (1 + (ivaRate/100));
-            bases[ivaRate] += base; cuotas[ivaRate] += (lineTotal - base);
-        });
-
-        db.collection('orders').add({
-            ticketNumber: ticketNum, dateStr, waiter, table, total,
-            items: this.cart.map(i => ({ name: i.name, qty: i.qty, price: i.isInvited ? 0 : i.price, isInvited: i.isInvited }))
-        });
-
-        let h = `<div style="text-align:center; margin-bottom:10px;"><h2 style="margin:0;">EL QUINTO SABOR</h2>Avda. Quitapesares, 17<br>28670 Villaviciosa Madrid<br>CIF: B87650776</div>
-        <table class="p-table"><tr><td>FACT.SIMPLIFICADA<br>T001/${ticketNum}</td><td style="text-align:right;">FECHA ${dateStr}<br>SALA 3 MESA ${table}</td></tr></table><div class="p-dashed"></div>
-        <table class="p-table"><tr><th align="left">UDS</th><th align="left">DESCRIPCION</th><th align="right">PVP</th><th align="right">IMPORTE</th></tr>`;
-        this.cart.forEach(i => {
-            h += `<tr><td>${i.qty}</td><td>${i.name.toUpperCase()} ${i.isInvited ? '(INV)' : ''}</td><td align="right">${i.price.toFixed(2)}</td><td align="right">${(i.isInvited ? 0 : i.price*i.qty).toFixed(2)} €</td></tr>`;
-        });
-        h += `</table><div class="p-dashed"></div><table class="p-table"><tr><td style="width:60%"><table class="p-table"><tr><td>BASE</td><td>IVA</td><td>CUOTA</td></tr>`;
-        if(bases[10]>0) h += `<tr><td>${bases[10].toFixed(2)}</td><td>10%</td><td>${cuotas[10].toFixed(2)}</td></tr>`;
-        if(bases[21]>0) h += `<tr><td>${bases[21].toFixed(2)}</td><td>21%</td><td>${cuotas[21].toFixed(2)}</td></tr>`;
-        h += `</table></td><td align="right" valign="bottom"><span style="font-size:18px;">TOTAL <b>${total.toFixed(2)} €</b></span></td></tr></table><div class="p-dashed"></div>
-        <div style="text-align:center;">*** GRACIAS POR SU VISITA ***<br>ATENDIDO POR: ${waiter}</div>`;
-
-        document.getElementById('print-area').innerHTML = h;
-        window.print();
-        db.collection('settings').doc('counter').update({ ticketNumber: firebase.firestore.FieldValue.increment(1) });
+    updateChange() {
+        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const cash = parseFloat(document.getElementById('cash-input').value) || 0;
+        const change = cash - total;
+        document.getElementById('pay-change-val').textContent = (change >= 0 ? change.toFixed(2) : '0,00').replace('.', ',') + ' €';
+        document.getElementById('btn-confirm-pay').disabled = change < 0;
     }
 
-    generateZReport() {
-        const today = new Date().toLocaleDateString('es-ES');
-        const todaysOrders = this.orders.filter(o => o.dateStr === today);
-        if(todaysOrders.length === 0) { alert("Sin ventas hoy."); return; }
-        const total = todaysOrders.reduce((s, o) => s + o.total, 0);
-        alert(`CIERRE DE CAJA (Z)\nDía: ${today}\n-----------------\nTickets: ${todaysOrders.length}\nTOTAL: ${total.toFixed(2)} €`);
+    finish() {
+        const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        const cashStr = document.getElementById('cash-input').value;
+        const cash = cashStr ? parseFloat(cashStr) : total;
+        const change = cash - total;
+
+        const waiterSelect = document.getElementById('waiter-select');
+        const waiterName = waiterSelect.options[waiterSelect.selectedIndex]?.text || 'INCOGNITO';
+        const tableNumber = document.getElementById('table-select').value;
+
+        const currentTicketNumber = this.nextTicketNumber;
+
+        let bases = { 10: 0, 21: 0 };
+        let cuotas = { 10: 0, 21: 0 };
+
+        this.cart.forEach(i => {
+            const lineTotal = i.price * i.qty;
+            const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
+            const baseImpLine = lineTotal / (1 + (ivaRate / 100));
+            if (ivaRate === 21) { bases[21] += baseImpLine; cuotas[21] += (lineTotal - baseImpLine); }
+            else { bases[10] += baseImpLine; cuotas[10] += (lineTotal - baseImpLine); }
+        });
+
+        const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+        const orderData = {
+            ticketNumber: currentTicketNumber,
+            dateStr: dateStr,
+            timeStr: timeStr,
+            waiter: waiterName,
+            table: tableNumber,
+            total: total,
+            cash: cash,
+            change: change,
+            items: this.cart.map(i => ({ name: i.name, qty: i.qty, price: i.price, iva: i.category === 'BEBIDAS' ? 21 : 10 }))
+        };
+        db.collection('orders').add(orderData);
+
+        let h = `
+        <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
+            <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
+            Avda. Quitapesares, 17<br>
+            28670 Villaviciosa Madrid<br>
+            CIF: B87650776
+        </div>
+        
+        <table class="p-table" style="margin-bottom: 8px;">
+            <tr>
+                <td style="text-align: left; width: 50%;">FACT.SIMPLIFICADA<br>T001/${currentTicketNumber}</td>
+                <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA ${tableNumber}</td>
+            </tr>
+        </table>
+        
+        <table class="p-table">
+            <tr style="border-bottom: 1px dashed black;">
+                <th style="text-align: left; width: 12%; padding-bottom: 4px; font-weight: normal;">UDS</th>
+                <th style="text-align: left; width: 45%; padding-bottom: 4px; font-weight: normal;">DESCRIPCION</th>
+                <th style="text-align: right; width: 18%; padding-bottom: 4px; font-weight: normal;">PVP</th>
+                <th style="text-align: right; width: 25%; padding-bottom: 4px; font-weight: normal;">IMPORTE</th>
+            </tr>
+        `;
+
+        this.cart.forEach(i => {
+            h += `
+            <tr>
+                <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 16)}</td>
+                <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                <td style="text-align: right; padding-top: 4px;">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</td>
+            </tr>`;
+        });
+
+        h += `
+        </table>
+        <div class="p-dashed"></div>
+        
+        <table class="p-table" style="margin-bottom: 12px;">
+            <tr>
+                <td style="width: 55%; vertical-align: bottom;">
+                    <table class="p-table">
+                        <tr>
+                            <td style="text-align: left; width: 40%; font-weight: bold;">BASE IMP</td>
+                            <td style="text-align: center; width: 20%; font-weight: bold;">IVA</td>
+                            <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
+                        </tr>
+        `;
+
+        if (bases[10] > 0) {
+            h += `
+                        <tr>
+                            <td style="text-align: left;">${bases[10].toFixed(2).replace('.', ',')}</td>
+                            <td style="text-align: center;">10%</td>
+                            <td style="text-align: right;">${cuotas[10].toFixed(2).replace('.', ',')}</td>
+                        </tr>`;
+        }
+
+        if (bases[21] > 0) {
+            h += `
+                        <tr>
+                            <td style="text-align: left;">${bases[21].toFixed(2).replace('.', ',')}</td>
+                            <td style="text-align: center;">21%</td>
+                            <td style="text-align: right;">${cuotas[21].toFixed(2).replace('.', ',')}</td>
+                        </tr>`;
+        }
+
+        h += `
+                    </table>
+                </td>
+                <td style="width: 45%; text-align: right; vertical-align: bottom;">
+                    <div style="font-size: 14px; margin-bottom: 2px;">TOTAL</div>
+                    <div style="font-size: 18px; font-weight: bold;">${total.toFixed(2).replace('.', ',')} €</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="p-dashed"></div>
+
+        <table class="p-table" style="margin-bottom: 15px;">
+            <tr>
+                <td style="width: 40%;"></td>
+                <td style="width: 30%; text-align: right;">ENTREGADO</td>
+                <td style="width: 30%; text-align: right;">CAMBIO</td>
+            </tr>
+            <tr>
+                <td style="text-align: right; padding-right: 15px;">EFECTIVO</td>
+                <td style="text-align: right;">${cash.toFixed(2).replace('.', ',')}</td>
+                <td style="text-align: right;">${change.toFixed(2).replace('.', ',')} €</td>
+            </tr>
+        </table>
+        
+        <div style="text-align: center; line-height: 1.2;">
+            *** GRACIAS POR SU VISITA ***<br>
+            <div style="text-align: left; margin-top: 5px;">ATENDIDO POR: ${waiterName}</div>
+        </div>
+        `;
+
+        document.getElementById('print-area').innerHTML = h;
+        document.getElementById('print-area').offsetHeight;
+
+        window.print();
+
+        db.collection('settings').doc('counter').update({
+            ticketNumber: firebase.firestore.FieldValue.increment(1)
+        }).catch(e => console.error("Error contador:", e));
     }
 
     renderAdmin() {
-        document.getElementById('orders-list').innerHTML = this.orders.slice(0,15).map(o => `<tr><td>T001/${o.ticketNumber}</td><td>${o.dateStr}</td><td>Mesa ${o.table}</td><td><strong>${o.total.toFixed(2)}€</strong></td><td><button onclick="window.pos.delOrder('${o.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
-        document.getElementById('admin-list').innerHTML = this.products.map(p => `<tr><td>${p.name}</td><td>${p.category}</td><td>${p.category==='BEBIDAS'?21:10}%</td><td>${p.price.toFixed(2)}€</td><td><button onclick="window.pos.delP('${p.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
-        document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `<tr><td>${w.name}</td><td><button onclick="window.pos.delWaiter('${w.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
+        document.getElementById('orders-list').innerHTML = this.orders.map(o => `
+            <tr>
+                <td><strong>T001/${o.ticketNumber}</strong></td>
+                <td>${o.dateStr}</td>
+                <td>${o.timeStr || '--:--'}</td>
+                <td>Mesa ${o.table}</td>
+                <td><strong>${o.total.toFixed(2).replace('.', ',')} €</strong></td>
+                <td>
+                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:10px;" onclick="window.pos.viewOrder('${o.id}')">Ver</button>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delOrder('${o.id}')">Borrar</button>
+                </td>
+            </tr>
+        `).join('');
+
+        document.getElementById('admin-list').innerHTML = this.products.map(p => {
+            const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
+            return `
+            <tr>
+                <td><strong>${p.name}</strong></td>
+                <td>${p.category}</td>
+                <td>${ivaVisual}%</td>
+                <td>${p.price.toFixed(2).replace('.', ',')} €</td>
+                <td>
+                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openProductModal('${p.id}')">Editar</button>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delP('${p.id}')">Eliminar</button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+
+        document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
+            <tr>
+                <td><strong>${w.name.toUpperCase()}</strong></td>
+                <td>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button>
+                </td>
+            </tr>
+        `).join('');
     }
 
-    openProductModal() { document.getElementById('product-modal').style.display='flex'; }
-    closeProductModal() { document.getElementById('product-modal').style.display='none'; }
-    async saveProduct() {
-        const name = document.getElementById('form-name').value, category = document.getElementById('form-category').value, price = parseFloat(document.getElementById('form-price').value);
-        if(name && !isNaN(price)) { await db.collection('products').add({ name, category, price }); this.closeProductModal(); }
+    viewOrder(id) {
+        const o = this.orders.find(x => x.id === id);
+        if (!o) return;
+
+        document.getElementById('viewer-modal-title').textContent = `T001/${o.ticketNumber}`;
+
+        let text = `Fecha: ${o.dateStr} a las ${o.timeStr || '--:--'}\n`;
+        text += `Camarero: ${o.waiter} | Mesa: ${o.table}\n`;
+        text += `--------------------------------------\n`;
+        o.items.forEach(i => {
+            text += `${i.qty}x ${i.name.padEnd(20, ' ').substring(0, 20)} ${(i.price * i.qty).toFixed(2)} €\n`;
+        });
+        text += `--------------------------------------\n`;
+        text += `TOTAL:                  ${o.total.toFixed(2)} €\n`;
+        text += `Efectivo:               ${o.cash.toFixed(2)} €\n`;
+        text += `Cambio:                 ${o.change.toFixed(2)} €\n`;
+
+        document.getElementById('ticket-viewer-content').textContent = text;
+        document.getElementById('viewer-modal').style.display = 'flex';
     }
-    async delP(id) { if(confirm("¿Eliminar?")) await db.collection('products').doc(id).delete(); }
-    async delOrder(id) { if(confirm("¿Borrar ticket?")) await db.collection('orders').doc(id).delete(); }
-    async addWaiter() { const name = prompt("Nombre:"); if(name) await db.collection('waiters').add({name: name.toUpperCase()}); }
-    async delWaiter(id) { if(confirm("¿Borrar?")) await db.collection('waiters').doc(id).delete(); }
+
+    async delOrder(id) {
+        if (confirm("¿Seguro que quieres borrar este ticket del historial?")) {
+            await db.collection('orders').doc(id).delete();
+        }
+    }
+
+    openProductModal(id = null) {
+        if (id) {
+            const p = this.products.find(x => x.id === id);
+            document.getElementById('product-modal-title').textContent = 'Editar Producto';
+            document.getElementById('form-id').value = p.id;
+            document.getElementById('form-name').value = p.name;
+            document.getElementById('form-category').value = p.category === 'BEBIDAS' ? 'BEBIDAS' : 'MENÚS';
+            document.getElementById('form-price').value = p.price;
+        } else {
+            document.getElementById('product-modal-title').textContent = 'Añadir Producto';
+            document.getElementById('form-id').value = '';
+            document.getElementById('form-name').value = '';
+            document.getElementById('form-category').value = 'MENÚS';
+            document.getElementById('form-price').value = '';
+        }
+        document.getElementById('product-modal').style.display = 'flex';
+    }
+
+    closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+    async saveProduct() {
+        const id = document.getElementById('form-id').value;
+        const name = document.getElementById('form-name').value.trim();
+        const category = document.getElementById('form-category').value;
+        const price = parseFloat(document.getElementById('form-price').value);
+        const iva = category === 'BEBIDAS' ? 21 : 10;
+
+        if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
+        const data = { name, category, price, iva };
+
+        if (id) await db.collection('products').doc(id).update(data);
+        else await db.collection('products').add(data);
+
+        this.closeProductModal();
+        this.loadData();
+    }
+
+    async delP(id) { if (confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); } }
+
+    async addWaiter() {
+        const n = prompt("Nombre del Camarero:");
+        if (n && n.trim() !== '') { await db.collection('waiters').add({ name: n.trim() }); this.loadData(); }
+    }
+
+    async delWaiter(id) { if (confirm("¿Eliminar este camarero?")) { await db.collection('waiters').doc(id).delete(); this.loadData(); } }
 }
 
 window.pos = new POS();
