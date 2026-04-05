@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>QUINTOPOS - Premium</title>
+    <title>QUINTOPOS - Elite</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -19,8 +19,8 @@
             --checkout-rust: #c25a42;
             --checkout-btn-green: #abcbc0;
             --checkout-border: #e5e7eb;
-            --radius-lg-modal: 20px;
             --danger: #ef4444;
+            --invitation: #f59e0b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -29,10 +29,9 @@
             html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         }
 
-        button { cursor: pointer; border: none; outline: none; transition: all 0.1s; }
-        button:active { transform: scale(0.97); }
+        button { cursor: pointer; border: none; outline: none; transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:active { transform: scale(0.95); }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        input, select { user-select: auto; }
 
         #app-root { display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; }
         #sidebar { width: 90px; background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 50; flex-shrink: 0; }
@@ -41,20 +40,19 @@
         .nav-btn svg { width: 28px; height: 28px; fill: currentColor; }
         .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
 
-        #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
-        #mobile-header { display: none; padding: 16px 24px; background: white; border-bottom: 1px solid var(--checkout-border); z-index: 20; align-items: center; justify-content: center; width: 100%; }
-        .mobile-brand { font-size: 18px; font-weight: 900; color: var(--text-main); letter-spacing: 1px;}
+        #main-container { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
         .view { flex: 1; display: none; height: 100%; overflow: hidden; width: 100%; }
         .view.active { display: flex; }
 
         #pos-view { flex-direction: row; width: 100%; }
         #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; }
+        
         .search-bar-container { margin-bottom: 15px; position: relative; flex-shrink: 0; }
-        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; outline: none; }
         .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
 
         #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; }
-        .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; border: 1px solid rgba(255,255,255,0.6); }
+        .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; border: 1px solid rgba(255,255,255,0.6); white-space: nowrap; }
         .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
 
         #products-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; overflow-y: auto; align-content: start; padding-bottom: 100px; }
@@ -62,43 +60,45 @@
         .product-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
         .product-price { font-size: 18px; color: var(--checkout-rust); font-weight: 900; }
 
-        #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; z-index: 40; transition: transform 0.3s ease; }
+        #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; z-index: 40; }
         #ticket-items { flex: 1; overflow-y: auto; padding: 10px 25px; }
         .ticket-item { display: flex; flex-direction: column; padding: 18px 0; border-bottom: 1px dashed #e2e8f0; gap: 12px; }
-        .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; }
+        .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; align-items: flex-start; }
         .item-controls { display: flex; justify-content: space-between; align-items: center; }
-        .qty-controls { display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .qty-btn { width: 36px; height: 36px; background: transparent; font-size: 20px; font-weight: 600; }
-        .invitation-btn { width: 36px; height: 36px; background: transparent; font-size: 18px; color: #f59e0b; margin-left: 5px; border: 1px solid #fde68a; border-radius: 8px; display: flex; align-items: center; justify-content: center;}
-        .invitation-btn.active { background: #fef3c7; border-color: #f59e0b; }
-        .item-total.is-invited { text-decoration: line-through; color: var(--text-muted); font-size: 12px; }
-        .inv-label { color: #f59e0b; font-weight: 900; font-size: 12px; margin-left: 5px;}
+        .qty-controls { display: flex; align-items: center; background: #f1f5f9; border-radius: 10px; }
+        .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 20px; font-weight: bold; color: var(--sidebar-bg); }
+        .qty-val { width: 30px; text-align: center; font-weight: 800; }
+        
+        /* BOTÓN ESTRELLA MEJORADO */
+        .invitation-btn { width: 44px; height: 40px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 22px; transition: 0.2s; }
+        .invitation-btn.active { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .inv-badge { background: #fef3c7; color: #d97706; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 5px; vertical-align: middle;}
 
         .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin: 20px 25px; }
         .checkout-btn { width: calc(100% - 50px); margin: 0 25px 25px; padding: 22px; background: var(--checkout-rust); color: white; font-size: 20px; font-weight: 800; border-radius: 12px; }
 
-        #mobile-cart-fab { display: none; position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); background: var(--checkout-rust); color: white; padding: 14px 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(194, 90, 66, 0.4); z-index: 30; flex-direction: column; }
+        /* BOTÓN Z ESPECTACULAR */
+        .btn-z-pro {
+            width: 55px; height: 55px; background: var(--danger); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 900; box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+            border: 3px solid white; transition: 0.3s;
+        }
+        .btn-z-pro:hover { transform: scale(1.1); background: #dc2626; }
+
+        .admin-section { display: flex; flex-direction: column; gap: 20px; }
+        #admin-view { flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 50px; background: transparent; }
+        .table-container { background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--checkout-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 18px 20px; border-bottom: 1px solid var(--checkout-border); text-align: left; }
+        th { background: #f8fafc; font-weight: 800; font-size: 12px; text-transform: uppercase; color: var(--text-muted); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
-        .modal { background: #ffffff; border-radius: 20px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
-        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+        .modal { background: #ffffff; border-radius: 24px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .modal-header { padding: 24px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 24px; }
         .modal-footer { padding: 0 24px 24px; display: flex; gap: 12px; }
-        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; background: #f9fafb; outline: none; }
-
-        #admin-view { flex-direction: column; padding: 32px; overflow-y: auto; gap: 40px; }
-        .table-container { background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--checkout-border); margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 16px 20px; border-bottom: 1px solid var(--checkout-border); font-size: 14px; }
-        th { background: #f9fafb; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
-
-        @media screen and (max-width: 900px) {
-            #app-root { flex-direction: column; }
-            #sidebar { width: 100%; height: 75px; flex-direction: row; order: 3; }
-            #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); }
-            #ticket-panel.open { transform: translateX(0); }
-            #mobile-cart-fab { display: flex; }
-        }
+        .checkout-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--checkout-border); font-size: 16px; background: #f9fafb; outline: none; }
 
         #print-area { display: none; }
         @media print {
@@ -109,6 +109,13 @@
             .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
             .p-table td { padding: 2px 0 !important; vertical-align: top !important; }
             .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
+        }
+
+        @media (max-width: 900px) {
+            #app-root { flex-direction: column; }
+            #sidebar { width: 100%; height: 75px; flex-direction: row; order: 3; }
+            #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); }
+            #ticket-panel.open { transform: translateX(0); }
         }
     </style>
 </head>
@@ -122,25 +129,24 @@
     </nav>
 
     <div id="main-container">
-        <div id="mobile-header"><span class="mobile-brand">QUINTOPOS</span></div>
         <div id="pos-view" class="view active">
             <div id="products-area">
-                <div class="search-bar-container"><svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off"></div>
+                <div class="search-bar-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
+                </div>
                 <div id="categories-bar"></div>
                 <div id="products-grid"></div>
-                <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
-                    <div class="fab-top"><span id="mobile-cart-count">0</span> Ver Pedido - <span id="mobile-cart-total">0,00 €</span></div>
-                    <div class="fab-bottom" id="mobile-cart-preview">Sin productos</div>
-                </button>
             </div>
+            
             <div id="ticket-panel">
-                <div style="padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                    <h2>Pedido</h2>
-                    <button onclick="window.pos.clearCart()" style="color:red; font-weight:bold; background:none;">Vaciar</button>
+                <div style="padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <h2>Pedido Actual</h2>
+                    <button onclick="window.pos.clearCart()" style="color:var(--danger); font-weight:bold; background:none; font-size:13px;">VACIAR</button>
                 </div>
                 <div id="ticket-items"></div>
                 <div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div>
-                <button class="checkout-btn" id="btn-pay" disabled onclick="window.pos.openPay()">Cobrar</button>
+                <button class="checkout-btn" id="btn-pay" disabled onclick="window.pos.openPay()">COBRAR</button>
             </div>
         </div>
 
@@ -148,16 +154,16 @@
             <div class="admin-section">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h2>Historial de Ventas</h2>
-                    <button class="btn-primary" style="background:#41815d;" onclick="window.pos.generateZReport()">Generar Cierre de Caja (Z)</button>
+                    <button class="btn-z-pro" onclick="window.pos.generateZReport()" title="Cierre de Caja">Z</button>
                 </div>
                 <div class="table-container"><table><thead><tr><th>Ticket</th><th>Fecha</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="orders-list"></tbody></table></div>
             </div>
             <div class="admin-section">
-                <div style="display:flex; justify-content:space-between;"><h2>Productos</h2><button class="btn-primary" onclick="window.pos.openProductModal()">+ Nuevo</button></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Productos</h2><button onclick="window.pos.openProductModal()" style="background:#111; color:white; padding:10px 20px; border-radius:8px; font-weight:700;">+ NUEVO</button></div>
                 <div class="table-container"><table><thead><tr><th>Nombre</th><th>Cat.</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead><tbody id="admin-list"></tbody></table></div>
             </div>
             <div class="admin-section">
-                <div style="display:flex; justify-content:space-between;"><h2>Camareros</h2><button class="btn-primary" onclick="window.pos.addWaiter()">+ Nuevo</button></div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h2>Camareros</h2><button onclick="window.pos.addWaiter()" style="background:#111; color:white; padding:10px 20px; border-radius:8px; font-weight:700;">+ NUEVO</button></div>
                 <div class="table-container"><table><thead><tr><th>Nombre</th><th>Acciones</th></tr></thead><tbody id="waiters-list"></tbody></table></div>
             </div>
         </div>
@@ -166,19 +172,18 @@
 
 <div class="modal-overlay" id="modal-pay">
     <div class="modal">
-        <div class="modal-header"><h3>Pago</h3><button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
+        <div class="modal-header"><h3>Finalizar Venta</h3><button onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
         <div class="modal-body">
-            <div class="order-summary-box"><div class="lbl-title">Resumen</div><div id="pay-total-val" style="font-size:24px; font-weight:900; color:var(--checkout-rust);">0,00 €</div></div>
-            <div style="display: flex; gap: 10px; margin: 15px 0;">
+            <div class="order-summary-box"><div class="lbl-title">Importe Total</div><div id="pay-total-val" style="font-size:32px; font-weight:900; color:var(--checkout-rust);">0,00 €</div></div>
+            <div style="display: flex; gap: 10px; margin: 20px 0;">
                 <select id="waiter-select" class="checkout-input"></select>
                 <select id="table-select" class="checkout-input">
-                    <option value="—">--</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="14">14</option><option value="15">15</option><option value="16">16</option>
+                    <option value="—">Mesa --</option><option value="1">Mesa 1</option><option value="2">Mesa 2</option><option value="3">Mesa 3</option><option value="6">Mesa 6</option><option value="7">Mesa 7</option><option value="8">Mesa 8</option><option value="9">Mesa 9</option><option value="10">Mesa 10</option><option value="14">Mesa 14</option><option value="15">Mesa 15</option><option value="16">Mesa 16</option>
                 </select>
             </div>
-            <input type="number" id="cash-input" class="checkout-input" style="font-size:20px;" placeholder="Efectivo recibido">
-            <div id="quick-btns" style="display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:10px;"></div>
+            <input type="number" id="cash-input" class="checkout-input" style="font-size:24px; text-align:center;" placeholder="0,00 € Recibido">
         </div>
-        <div class="modal-footer"><button class="btn-confirm" style="width:100%; height:50px;" onclick="window.pos.finish()">✓ Confirmar e imprimir</button></div>
+        <div class="modal-footer"><button style="width:100%; height:60px; background:var(--checkout-btn-green); color:#41815d; font-weight:800; border-radius:15px;" onclick="window.pos.finish()">✓ CONFIRMAR E IMPRIMIR</button></div>
     </div>
 </div>
 
@@ -186,12 +191,13 @@
     <div class="modal">
         <div class="modal-header"><h3 id="product-modal-title">Producto</h3><button onclick="window.pos.closeProductModal()">×</button></div>
         <div class="modal-body">
-            <input type="hidden" id="form-id">
-            <div class="form-group"><label>Nombre</label><input type="text" id="form-name" class="checkout-input"></div>
-            <div class="form-group"><label>Categoría</label><select id="form-category" class="checkout-input"><option value="MENÚS">MENÚS (10% IVA)</option><option value="BEBIDAS">BEBIDAS (21% IVA)</option></select></div>
-            <div class="form-group"><label>Precio con IVA</label><input type="number" id="form-price" class="checkout-input" step="0.01"></div>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <input type="text" id="form-name" class="checkout-input" placeholder="Nombre del producto">
+                <select id="form-category" class="checkout-input"><option value="MENÚS">MENÚS (10% IVA)</option><option value="BEBIDAS">BEBIDAS (21% IVA)</option></select>
+                <input type="number" id="form-price" class="checkout-input" step="0.01" placeholder="Precio con IVA">
+            </div>
         </div>
-        <div class="modal-footer"><button class="btn-confirm" style="width:100%;" onclick="window.pos.saveProduct()">Guardar</button></div>
+        <div class="modal-footer"><button style="width:100%; height:50px; background:var(--sidebar-bg); color:white; border-radius:12px;" onclick="window.pos.saveProduct()">GUARDAR</button></div>
     </div>
 </div>
 
@@ -212,43 +218,17 @@ const db = firebase.firestore();
 
 class POS {
     constructor() {
-        this.products = [];
-        this.cart = [];
-        this.waiters = [];
-        this.orders = [];
-        this.activeCat = 'Todo';
-        this.searchTerm = '';
-        this.nextTicketNumber = 76283;
+        this.products = []; this.cart = []; this.waiters = []; this.orders = [];
+        this.activeCat = 'Todo'; this.searchTerm = ''; this.nextTicketNumber = 76283;
         this.init();
     }
 
     async init() {
         this.bindEvents();
-        await this.loadData();
-    }
-
-    async loadData() {
-        db.collection('settings').doc('counter').onSnapshot(doc => {
-            if(doc.exists) this.nextTicketNumber = doc.data().ticketNumber;
-            else db.collection('settings').doc('counter').set({ ticketNumber: 76283 });
-        });
-
-        db.collection('products').onSnapshot(snap => {
-            this.products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            this.render();
-            this.renderAdmin();
-        });
-
-        db.collection('waiters').onSnapshot(snap => {
-            this.waiters = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            this.renderAdmin();
-        });
-
-        db.collection('orders').onSnapshot(snap => {
-            this.orders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            this.orders.sort((a,b) => b.ticketNumber - a.ticketNumber);
-            this.renderAdmin();
-        });
+        db.collection('settings').doc('counter').onSnapshot(doc => { if(doc.exists) this.nextTicketNumber = doc.data().ticketNumber; });
+        db.collection('products').onSnapshot(snap => { this.products = snap.docs.map(d => ({id:d.id, ...d.data()})); this.render(); this.renderAdmin(); });
+        db.collection('waiters').onSnapshot(snap => { this.waiters = snap.docs.map(d => ({id:d.id, ...d.data()})); this.renderAdmin(); });
+        db.collection('orders').onSnapshot(snap => { this.orders = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => b.ticketNumber - a.ticketNumber); this.renderAdmin(); });
     }
 
     bindEvents() {
@@ -257,31 +237,16 @@ class POS {
             e.currentTarget.classList.add('active');
             document.getElementById(e.currentTarget.dataset.view).classList.add('active');
         }));
-
-        document.getElementById('search-input').addEventListener('input', e => {
-            this.searchTerm = e.target.value.toLowerCase();
-            this.render();
-        });
-
-        window.addEventListener('afterprint', () => {
-            this.clearCart();
-            document.getElementById('modal-pay').style.display='none';
-        });
+        document.getElementById('search-input').addEventListener('input', e => { this.searchTerm = e.target.value.toLowerCase(); this.render(); });
+        window.addEventListener('afterprint', () => { this.clearCart(); document.getElementById('modal-pay').style.display='none'; });
     }
 
     render() {
         const cats = ['Todo', 'MENÚS', 'BEBIDAS'];
         document.getElementById('categories-bar').innerHTML = cats.map(c => `<button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>`).join('');
-
         let filtered = this.activeCat === 'Todo' ? this.products : this.products.filter(p => p.category === this.activeCat);
         if (this.searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm));
-
-        document.getElementById('products-grid').innerHTML = filtered.map(p => `
-            <div class="product-card" onclick="window.pos.addToCart('${p.id}')">
-                <div class="product-name">${p.name}</div>
-                <div class="product-price">${p.price.toFixed(2).replace('.',',')} €</div>
-            </div>
-        `).join('');
+        document.getElementById('products-grid').innerHTML = filtered.map(p => `<div class="product-card" onclick="window.pos.addToCart('${p.id}')"><div class="product-name">${p.name}</div><div class="product-price">${p.price.toFixed(2).replace('.',',')} €</div></div>`).join('');
         this.updateCartUI();
     }
 
@@ -289,15 +254,11 @@ class POS {
 
     addToCart(id) {
         const p = this.products.find(x => x.id === id);
-        const item = this.cart.find(i => i.id === id && !i.isInvited);
-        if(item) item.qty++; else this.cart.push({...p, qty:1, isInvited: false});
+        this.cart.push({...p, qty:1, isInvited: false});
         this.updateCartUI();
     }
 
-    toggleInvitation(index) {
-        this.cart[index].isInvited = !this.cart[index].isInvited;
-        this.updateCartUI();
-    }
+    toggleInvitation(index) { this.cart[index].isInvited = !this.cart[index].isInvited; this.updateCartUI(); }
 
     updateCartQty(index, delta) {
         this.cart[index].qty += delta;
@@ -305,7 +266,7 @@ class POS {
         this.updateCartUI();
     }
 
-    clearCart() { this.cart = []; this.updateCartUI(); document.getElementById('ticket-panel').classList.remove('open'); }
+    clearCart() { this.cart = []; this.updateCartUI(); }
 
     updateCartUI() {
         const total = this.cart.reduce((s, i) => s + (i.isInvited ? 0 : i.price * i.qty), 0);
@@ -315,7 +276,7 @@ class POS {
         document.getElementById('ticket-items').innerHTML = this.cart.map((i, idx) => `
             <div class="ticket-item">
                 <div class="item-info">
-                    <span>${i.name} ${i.isInvited ? '<span class="inv-label">☆ INV</span>' : ''}</span>
+                    <span>${i.name} ${i.isInvited ? '<span class="inv-badge">INVITACIÓN</span>' : ''}</span>
                     <span class="item-total ${i.isInvited ? 'is-invited' : ''}">${(i.price*i.qty).toFixed(2).replace('.',',')} €</span>
                 </div>
                 <div class="item-controls">
@@ -324,7 +285,7 @@ class POS {
                         <div class="qty-val">${i.qty}</div>
                         <button class="qty-btn" onclick="window.pos.updateCartQty(${idx}, 1)">+</button>
                     </div>
-                    <button class="invitation-btn ${i.isInvited ? 'active' : ''}" onclick="window.pos.toggleInvitation(${idx})">☆</button>
+                    <button class="invitation-btn ${i.isInvited ? 'active' : ''}" onclick="window.pos.toggleInvitation(${idx})" title="Invitación">★</button>
                 </div>
             </div>
         `).join('');
@@ -342,9 +303,7 @@ class POS {
         const waiter = document.getElementById('waiter-select').value;
         const table = document.getElementById('table-select').value;
         const ticketNum = this.nextTicketNumber;
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('es-ES');
-        const timeStr = now.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+        const dateStr = new Date().toLocaleDateString('es-ES');
 
         let bases = { 10: 0, 21: 0 }, cuotas = { 10: 0, 21: 0 };
         this.cart.forEach(i => {
@@ -352,29 +311,24 @@ class POS {
             const lineTotal = i.price * i.qty;
             const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
             const base = lineTotal / (1 + (ivaRate/100));
-            bases[ivaRate] += base;
-            cuotas[ivaRate] += (lineTotal - base);
+            bases[ivaRate] += base; cuotas[ivaRate] += (lineTotal - base);
         });
 
-        // Guardar en Firebase
         db.collection('orders').add({
-            ticketNumber: ticketNum, dateStr, timeStr, waiter, table, total,
+            ticketNumber: ticketNum, dateStr, waiter, table, total,
             items: this.cart.map(i => ({ name: i.name, qty: i.qty, price: i.isInvited ? 0 : i.price, isInvited: i.isInvited }))
         });
 
-        // Generar Ticket Impresión
-        let h = `<div style="text-align:center; margin-bottom:10px;"><h3>EL QUINTO SABOR</h3>Avda. Quitapesares, 17<br>28670 Villaviciosa Madrid<br>CIF: B87650776</div>
+        let h = `<div style="text-align:center; margin-bottom:10px;"><h2 style="margin:0;">EL QUINTO SABOR</h2>Avda. Quitapesares, 17<br>28670 Villaviciosa Madrid<br>CIF: B87650776</div>
         <table class="p-table"><tr><td>FACT.SIMPLIFICADA<br>T001/${ticketNum}</td><td style="text-align:right;">FECHA ${dateStr}<br>SALA 3 MESA ${table}</td></tr></table><div class="p-dashed"></div>
-        <table class="p-table"><tr><th>UDS</th><th>DESCRIPCION</th><th style="text-align:right;">PVP</th><th style="text-align:right;">IMPORTE</th></tr>`;
-        
+        <table class="p-table"><tr><th align="left">UDS</th><th align="left">DESCRIPCION</th><th align="right">PVP</th><th align="right">IMPORTE</th></tr>`;
         this.cart.forEach(i => {
-            h += `<tr><td>${i.qty}</td><td>${i.name.toUpperCase()} ${i.isInvited ? '(INV)' : ''}</td><td style="text-align:right;">${i.price.toFixed(2)}</td><td style="text-align:right;">${(i.isInvited ? 0 : i.price*i.qty).toFixed(2)} €</td></tr>`;
+            h += `<tr><td>${i.qty}</td><td>${i.name.toUpperCase()} ${i.isInvited ? '(INV)' : ''}</td><td align="right">${i.price.toFixed(2)}</td><td align="right">${(i.isInvited ? 0 : i.price*i.qty).toFixed(2)} €</td></tr>`;
         });
-
         h += `</table><div class="p-dashed"></div><table class="p-table"><tr><td style="width:60%"><table class="p-table"><tr><td>BASE</td><td>IVA</td><td>CUOTA</td></tr>`;
         if(bases[10]>0) h += `<tr><td>${bases[10].toFixed(2)}</td><td>10%</td><td>${cuotas[10].toFixed(2)}</td></tr>`;
         if(bases[21]>0) h += `<tr><td>${bases[21].toFixed(2)}</td><td>21%</td><td>${cuotas[21].toFixed(2)}</td></tr>`;
-        h += `</table></td><td style="text-align:right; vertical-align:bottom;"><span style="font-size:18px;">TOTAL <b>${total.toFixed(2)} €</b></span></td></tr></table><div class="p-dashed"></div>
+        h += `</table></td><td align="right" valign="bottom"><span style="font-size:18px;">TOTAL <b>${total.toFixed(2)} €</b></span></td></tr></table><div class="p-dashed"></div>
         <div style="text-align:center;">*** GRACIAS POR SU VISITA ***<br>ATENDIDO POR: ${waiter}</div>`;
 
         document.getElementById('print-area').innerHTML = h;
@@ -385,28 +339,26 @@ class POS {
     generateZReport() {
         const today = new Date().toLocaleDateString('es-ES');
         const todaysOrders = this.orders.filter(o => o.dateStr === today);
-        if(todaysOrders.length === 0) { alert("No hay ventas hoy."); return; }
-
+        if(todaysOrders.length === 0) { alert("Sin ventas hoy."); return; }
         const total = todaysOrders.reduce((s, o) => s + o.total, 0);
-        alert(`CIERRE DE CAJA (Z) - ${today}\n\nTickets emitidos: ${todaysOrders.length}\nTOTAL RECAUDADO: ${total.toFixed(2)} €`);
+        alert(`CIERRE DE CAJA (Z)\nDía: ${today}\n-----------------\nTickets: ${todaysOrders.length}\nTOTAL: ${total.toFixed(2)} €`);
     }
 
     renderAdmin() {
-        document.getElementById('orders-list').innerHTML = this.orders.slice(0,10).map(o => `<tr><td>T001/${o.ticketNumber}</td><td>${o.dateStr}</td><td>${o.table}</td><td>${o.total.toFixed(2)}€</td><td><button onclick="window.pos.delOrder('${o.id}')" style="color:red;">Borrar</button></td></tr>`).join('');
-        document.getElementById('admin-list').innerHTML = this.products.map(p => `<tr><td>${p.name}</td><td>${p.category}</td><td>${p.category==='BEBIDAS'?21:10}%</td><td>${p.price.toFixed(2)}€</td><td><button onclick="window.pos.delP('${p.id}')" style="color:red;">Eliminar</button></td></tr>`).join('');
-        document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `<tr><td>${w.name}</td><td><button onclick="window.pos.delWaiter('${w.id}')" style="color:red;">Borrar</button></td></tr>`).join('');
+        document.getElementById('orders-list').innerHTML = this.orders.slice(0,15).map(o => `<tr><td>T001/${o.ticketNumber}</td><td>${o.dateStr}</td><td>Mesa ${o.table}</td><td><strong>${o.total.toFixed(2)}€</strong></td><td><button onclick="window.pos.delOrder('${o.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
+        document.getElementById('admin-list').innerHTML = this.products.map(p => `<tr><td>${p.name}</td><td>${p.category}</td><td>${p.category==='BEBIDAS'?21:10}%</td><td>${p.price.toFixed(2)}€</td><td><button onclick="window.pos.delP('${p.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
+        document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `<tr><td>${w.name}</td><td><button onclick="window.pos.delWaiter('${w.id}')" style="color:var(--danger); background:none; font-weight:bold;">BORRAR</button></td></tr>`).join('');
     }
 
     openProductModal() { document.getElementById('product-modal').style.display='flex'; }
     closeProductModal() { document.getElementById('product-modal').style.display='none'; }
     async saveProduct() {
         const name = document.getElementById('form-name').value, category = document.getElementById('form-category').value, price = parseFloat(document.getElementById('form-price').value);
-        await db.collection('products').add({ name, category, price });
-        this.closeProductModal();
+        if(name && !isNaN(price)) { await db.collection('products').add({ name, category, price }); this.closeProductModal(); }
     }
     async delP(id) { if(confirm("¿Eliminar?")) await db.collection('products').doc(id).delete(); }
     async delOrder(id) { if(confirm("¿Borrar ticket?")) await db.collection('orders').doc(id).delete(); }
-    async addWaiter() { const name = prompt("Nombre:"); if(name) await db.collection('waiters').add({name}); }
+    async addWaiter() { const name = prompt("Nombre:"); if(name) await db.collection('waiters').add({name: name.toUpperCase()}); }
     async delWaiter(id) { if(confirm("¿Borrar?")) await db.collection('waiters').doc(id).delete(); }
 }
 
