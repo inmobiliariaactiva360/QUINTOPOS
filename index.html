@@ -113,10 +113,12 @@
         .item-row { display: flex; justify-content: space-between; font-size: 14px; color: #374151; margin-bottom: 8px; }
         .item-qty { color: #9ca3af; margin-left: 8px; font-size: 13px; font-family: monospace;}
         .summary-total { display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px solid var(--checkout-border); padding-top: 16px; font-size: 22px; font-weight: 800; align-items: center;}
+        .summary-total span:first-child { color: #111; font-size: 18px;}
         .summary-total span:last-child { color: var(--checkout-rust); }
         
-        /* Select de Camarero */
-        .waiter-select { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; appearance: none; -webkit-appearance: none; }
+        /* Inputs Modales Generales */
+        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; }
+        select.checkout-input { appearance: none; -webkit-appearance: none; }
 
         .input-section { display: flex; flex-direction: column; gap: 8px; }
         .input-group { position: relative; }
@@ -250,9 +252,15 @@
         <div class="modal-body">
             <div class="order-summary-box"><div class="lbl-title">Resumen del pedido</div><div class="pay-items-list" id="pay-items-list"></div><div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div></div>
             
-            <div class="input-section" style="margin-top: -5px;">
-                <div class="lbl-title" style="margin-bottom:4px;">Atendido por</div>
-                <select id="waiter-select" class="waiter-select"></select>
+            <div style="display: flex; gap: 12px; margin-top: -5px;">
+                <div class="input-section" style="flex: 2;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Atendido por</div>
+                    <select id="waiter-select" class="checkout-input"></select>
+                </div>
+                <div class="input-section" style="flex: 1;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Mesa</div>
+                    <input type="number" id="table-input" class="checkout-input" placeholder="Ej: 9" min="1">
+                </div>
             </div>
 
             <div class="input-section"><div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div><div class="input-group"><span class="currency">€</span><input type="number" id="cash-input" step="0.01" placeholder="0.00"></div><div class="quick-grid" id="quick-btns"></div></div>
@@ -313,22 +321,18 @@ class POS {
 
     async loadData() {
         try {
-            // Cargar Productos
             const snapProducts = await db.collection('products').get();
             this.products = [];
             snapProducts.forEach(doc => this.products.push({ id: doc.id, ...doc.data() }));
 
-            // Cargar Camareros
             const snapWaiters = await db.collection('waiters').get();
             this.waiters = [];
             snapWaiters.forEach(doc => this.waiters.push({ id: doc.id, ...doc.data() }));
             
-            // Si no hay camareros, crear uno por defecto
             if(this.waiters.length === 0) {
                 const docRef = await db.collection('waiters').add({name: 'SAMUEL'});
                 this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
             }
-
         } catch (e) { console.error("Error Firebase:", e); }
         
         this.render();
@@ -430,10 +434,11 @@ class POS {
         const total = this.cart.reduce((s, i) => s + (i.price * i.qty), 0);
         document.getElementById('pay-total-val').textContent = total.toFixed(2).replace('.', ',') + ' €';
         document.getElementById('pay-items-list').innerHTML = this.cart.map(i => `<div class="item-row"><span>${i.name.substring(0,25)} <span class="item-qty">x${i.qty}</span></span><span>${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`).join('');
+        
         document.getElementById('cash-input').value = '';
         document.getElementById('pay-change-val').textContent = '0,00 €';
+        document.getElementById('table-input').value = ''; // Vaciar la mesa al cobrar
         
-        // Rellenar lista de camareros en el desplegable
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
 
         let fast = [total];
@@ -462,9 +467,11 @@ class POS {
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
-        // Coger el camarero seleccionado
         const waiterSelect = document.getElementById('waiter-select');
         const waiterName = waiterSelect.options[waiterSelect.selectedIndex]?.text || 'INCOGNITO';
+        
+        const tableInputRaw = document.getElementById('table-input').value.trim();
+        const tableNumber = tableInputRaw !== '' ? tableInputRaw : '—'; // Guion si está vacío
         
         let bases = { 10: 0, 21: 0 };
         let cuotas = { 10: 0, 21: 0 };
@@ -480,7 +487,6 @@ class POS {
         const rnd = Math.floor(Math.random() * 90000) + 10000;
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
         
-        // TICKET TABULADO BLINDADO
         let h = `
         <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
             <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
@@ -492,7 +498,7 @@ class POS {
         <table class="p-table" style="margin-bottom: 8px;">
             <tr>
                 <td style="text-align: left; width: 50%;">FACT.SIMPLIFICADA<br>T001/${rnd}</td>
-                <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA 9</td>
+                <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA ${tableNumber}</td>
             </tr>
         </table>
         
@@ -585,7 +591,6 @@ class POS {
     }
 
     renderAdmin() {
-        // Render Tabla Productos
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
             const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
             return `
@@ -602,18 +607,14 @@ class POS {
             `
         }).join('');
 
-        // Render Tabla Camareros
         document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
             <tr>
                 <td><strong>${w.name.toUpperCase()}</strong></td>
-                <td>
-                    <button style="color:red; background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button>
-                </td>
+                <td><button style="color:red; background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button></td>
             </tr>
         `).join('');
     }
 
-    // --- GESTIÓN PRODUCTOS ---
     openProductModal(id = null) {
         if (id) {
             const p = this.products.find(x => x.id === id);
@@ -651,24 +652,15 @@ class POS {
         this.loadData();
     }
 
-    async delP(id) {
-        if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); }
-    }
+    async delP(id) { if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); } }
 
-    // --- GESTIÓN CAMAREROS ---
     async addWaiter() {
         const n = prompt("Nombre del Camarero:");
-        if(n && n.trim() !== '') {
-            await db.collection('waiters').add({ name: n.trim() });
-            this.loadData();
-        }
+        if(n && n.trim() !== '') { await db.collection('waiters').add({ name: n.trim() }); this.loadData(); }
     }
 
     async delWaiter(id) {
-        if(confirm("¿Eliminar este camarero?")) {
-            await db.collection('waiters').doc(id).delete();
-            this.loadData();
-        }
+        if(confirm("¿Eliminar este camarero?")) { await db.collection('waiters').doc(id).delete(); this.loadData(); }
     }
 }
 
