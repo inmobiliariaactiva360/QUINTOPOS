@@ -133,11 +133,13 @@
         .btn-confirm { flex: 1.8; padding: 14px; background: var(--checkout-btn-green); color: white; border-radius: 8px; font-weight: 700; font-size: 15px; border: none;}
         .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Modal Admin UI */
+        /* Modal Formularios y Visor Ticket */
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;}
         .form-group label { font-weight: 700; color: var(--text-main); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
         .form-group input, .form-group select { padding: 14px; font-size: 15px; border: 1px solid var(--checkout-border); border-radius: 8px; background: #f9fafb; font-weight: 600; color: #1f2937; outline: none; appearance: none; -webkit-appearance: none;}
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; }
+
+        #ticket-viewer-content { font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.4; color: #111; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px dashed var(--checkout-border); white-space: pre-wrap; }
 
         /* Vista Admin */
         #admin-view { flex-direction: column; padding: 32px; overflow-y: auto; background: transparent; gap: 40px;}
@@ -216,6 +218,18 @@
         </div>
 
         <div id="admin-view" class="view">
+            <div class="admin-section">
+                <div class="admin-header">
+                    <h2>Historial de Tickets</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Ticket</th><th>Fecha</th><th>Hora</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead>
+                        <tbody id="orders-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="admin-section">
                 <div class="admin-header">
                     <h2>Gestión de Productos</h2>
@@ -301,6 +315,18 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="viewer-modal">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="viewer-modal-title">Ticket</h3><button class="close-x" onclick="document.getElementById('viewer-modal').style.display='none'">×</button></div>
+        <div class="modal-body" style="padding-bottom:0;">
+            <div id="ticket-viewer-content"></div>
+        </div>
+        <div class="modal-footer" style="padding-top:20px;">
+            <button class="btn-cancel" style="width: 100%; flex: none;" onclick="document.getElementById('viewer-modal').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <div id="print-area"></div>
 
 <script>
@@ -321,9 +347,10 @@ class POS {
         this.products = [];
         this.cart = [];
         this.waiters = [];
+        this.orders = []; // Nuevo array para guardar el historial
         this.activeCat = 'Todo';
         this.searchTerm = '';
-        this.nextTicketNumber = 76283; // Base number para la secuencia
+        this.nextTicketNumber = 76283; 
         this.init();
     }
 
@@ -336,12 +363,8 @@ class POS {
         try {
             // Sincronización en tiempo real del Número de Ticket
             db.collection('settings').doc('counter').onSnapshot(doc => {
-                if(doc.exists) {
-                    this.nextTicketNumber = doc.data().ticketNumber;
-                } else {
-                    db.collection('settings').doc('counter').set({ ticketNumber: 76283 });
-                    this.nextTicketNumber = 76283;
-                }
+                if(doc.exists) { this.nextTicketNumber = doc.data().ticketNumber; } 
+                else { db.collection('settings').doc('counter').set({ ticketNumber: 76283 }); this.nextTicketNumber = 76283; }
             });
 
             // Cargar Productos
@@ -353,11 +376,17 @@ class POS {
             const snapWaiters = await db.collection('waiters').get();
             this.waiters = [];
             snapWaiters.forEach(doc => this.waiters.push({ id: doc.id, ...doc.data() }));
-            
             if(this.waiters.length === 0) {
                 const docRef = await db.collection('waiters').add({name: 'SAMUEL'});
                 this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
             }
+
+            // Cargar Órdenes (Historial)
+            const snapOrders = await db.collection('orders').get();
+            this.orders = [];
+            snapOrders.forEach(doc => this.orders.push({ id: doc.id, ...doc.data() }));
+            // Ordenar por número de ticket descendente (más nuevo primero)
+            this.orders.sort((a,b) => b.ticketNumber - a.ticketNumber);
 
         } catch (e) { console.error("Error Firebase:", e); }
         
@@ -464,9 +493,8 @@ class POS {
         document.getElementById('cash-input').value = '';
         document.getElementById('pay-change-val').textContent = '0,00 €';
         
-        // Reset de desplegables
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
-        document.getElementById('table-select').value = '—'; // Reseteamos la mesa a vacía
+        document.getElementById('table-select').value = '—';
 
         let fast = [total];
         let next5 = Math.ceil(total/5)*5; if(next5 > total) fast.push(next5);
@@ -494,14 +522,10 @@ class POS {
         const cash = cashStr ? parseFloat(cashStr) : total;
         const change = cash - total;
         
-        // Coger los datos de camarero y mesa
         const waiterSelect = document.getElementById('waiter-select');
         const waiterName = waiterSelect.options[waiterSelect.selectedIndex]?.text || 'INCOGNITO';
+        const tableNumber = document.getElementById('table-select').value;
         
-        const tableSelect = document.getElementById('table-select');
-        const tableNumber = tableSelect.value;
-        
-        // Obtener ticket actual correlativo
         const currentTicketNumber = this.nextTicketNumber;
         
         let bases = { 10: 0, 21: 0 };
@@ -516,8 +540,23 @@ class POS {
         });
 
         const dateStr = new Date().toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        const timeStr = new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
         
-        // TICKET TABULADO BLINDADO
+        // --- GUARDADO EN FIREBASE (EL NUEVO HISTORIAL) ---
+        const orderData = {
+            ticketNumber: currentTicketNumber,
+            dateStr: dateStr,
+            timeStr: timeStr,
+            waiter: waiterName,
+            table: tableNumber,
+            total: total,
+            cash: cash,
+            change: change,
+            items: this.cart.map(i => ({ name: i.name, qty: i.qty, price: i.price, iva: i.category === 'BEBIDAS' ? 21 : 10 }))
+        };
+        db.collection('orders').add(orderData); // Guardamos la orden en la nube
+
+        // TICKET TABULADO BLINDADO PARA SAFARI
         let h = `
         <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
             <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
@@ -619,17 +658,30 @@ class POS {
         document.getElementById('print-area').innerHTML = h;
         document.getElementById('print-area').offsetHeight;
         
-        // Ejecuta la impresión de forma síncrona
         window.print();
         
-        // Actualiza el número de ticket secuencial de forma asíncrona (seguro para Safari)
         db.collection('settings').doc('counter').update({
             ticketNumber: firebase.firestore.FieldValue.increment(1)
-        }).catch(e => console.error("Error al actualizar contador:", e));
+        }).catch(e => console.error("Error contador:", e));
     }
 
     renderAdmin() {
-        // Render Tabla Productos
+        // Historial de Tickets
+        document.getElementById('orders-list').innerHTML = this.orders.map(o => `
+            <tr>
+                <td><strong>T001/${o.ticketNumber}</strong></td>
+                <td>${o.dateStr}</td>
+                <td>${o.timeStr || '--:--'}</td>
+                <td>Mesa ${o.table}</td>
+                <td><strong>${o.total.toFixed(2).replace('.',',')} €</strong></td>
+                <td>
+                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:10px;" onclick="window.pos.viewOrder('${o.id}')">Ver</button>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delOrder('${o.id}')">Borrar</button>
+                </td>
+            </tr>
+        `).join('');
+
+        // Productos
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
             const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
             return `
@@ -646,7 +698,7 @@ class POS {
             `
         }).join('');
 
-        // Render Tabla Camareros
+        // Camareros
         document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
             <tr>
                 <td><strong>${w.name.toUpperCase()}</strong></td>
@@ -655,6 +707,35 @@ class POS {
                 </td>
             </tr>
         `).join('');
+    }
+
+    // --- VISOR DE HISTORIAL ---
+    viewOrder(id) {
+        const o = this.orders.find(x => x.id === id);
+        if(!o) return;
+        
+        document.getElementById('viewer-modal-title').textContent = `T001/${o.ticketNumber}`;
+        
+        let text = `Fecha: ${o.dateStr} a las ${o.timeStr || '--:--'}\n`;
+        text += `Camarero: ${o.waiter} | Mesa: ${o.table}\n`;
+        text += `--------------------------------------\n`;
+        o.items.forEach(i => {
+            text += `${i.qty}x ${i.name.padEnd(20, ' ').substring(0,20)} ${(i.price*i.qty).toFixed(2)} €\n`;
+        });
+        text += `--------------------------------------\n`;
+        text += `TOTAL:                  ${o.total.toFixed(2)} €\n`;
+        text += `Efectivo:               ${o.cash.toFixed(2)} €\n`;
+        text += `Cambio:                 ${o.change.toFixed(2)} €\n`;
+
+        document.getElementById('ticket-viewer-content').textContent = text;
+        document.getElementById('viewer-modal').style.display = 'flex';
+    }
+
+    async delOrder(id) {
+        if(confirm("¿Seguro que quieres borrar este ticket del historial?")) {
+            await db.collection('orders').doc(id).delete();
+            this.loadData();
+        }
     }
 
     // --- GESTIÓN PRODUCTOS ---
@@ -683,7 +764,6 @@ class POS {
         const name = document.getElementById('form-name').value.trim();
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
-        // El IVA se calcula automáticamente según la categoría
         const iva = category === 'BEBIDAS' ? 21 : 10;
         
         if(!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
@@ -696,25 +776,15 @@ class POS {
         this.loadData();
     }
 
-    async delP(id) {
-        if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); }
-    }
+    async delP(id) { if(confirm("¿Eliminar producto?")) { await db.collection('products').doc(id).delete(); this.loadData(); } }
 
     // --- GESTIÓN CAMAREROS ---
     async addWaiter() {
         const n = prompt("Nombre del Camarero:");
-        if(n && n.trim() !== '') {
-            await db.collection('waiters').add({ name: n.trim() });
-            this.loadData();
-        }
+        if(n && n.trim() !== '') { await db.collection('waiters').add({ name: n.trim() }); this.loadData(); }
     }
 
-    async delWaiter(id) {
-        if(confirm("¿Eliminar este camarero?")) {
-            await db.collection('waiters').doc(id).delete();
-            this.loadData();
-        }
-    }
+    async delWaiter(id) { if(confirm("¿Eliminar este camarero?")) { await db.collection('waiters').doc(id).delete(); this.loadData(); } }
 }
 
 window.pos = new POS();
