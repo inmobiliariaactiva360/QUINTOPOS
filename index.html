@@ -80,15 +80,10 @@
         .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
 
-        #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; flex-shrink: 0; scrollbar-width: none; }
+        #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; }
         #categories-bar::-webkit-scrollbar { display: none; }
         .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; font-size: 15px; white-space: nowrap; border: 1px solid var(--border-glass); }
         .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
-
-        #subcategories-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; transition: all 0.2s; }
-        #subcategories-bar::-webkit-scrollbar { display: none; }
-        .subcat-btn { padding: 8px 18px; border-radius: 20px; background: rgba(255,255,255,0.5); color: var(--text-main); font-weight: 700; font-size: 13px; white-space: nowrap; border: 1px solid var(--border-glass); }
-        .subcat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         #products-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; overflow-y: auto; align-content: start; padding-bottom: 100px; }
         .product-card { background: rgba(255,255,255,0.8); border-radius: 22px; padding: 20px; height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease; }
@@ -293,7 +288,6 @@
                     <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
                 </div>
                 <div id="categories-bar"></div>
-                <div id="subcategories-bar" style="display:none;"></div>
                 <div id="products-grid"></div>
                 <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
                     <div class="fab-top"><span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span><span id="mobile-cart-total">0,00 €</span></div>
@@ -357,7 +351,7 @@
                 </div>
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Nombre</th><th>Categoría Padre</th><th>IVA por defecto</th><th>Acciones</th></tr></thead>
+                        <thead><tr><th>Nombre</th><th>Tipo</th><th>IVA</th><th>Acciones</th></tr></thead>
                         <tbody id="categories-list"></tbody>
                     </table>
                 </div>
@@ -420,6 +414,37 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="category-modal">
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="category-modal-title">Añadir Categoría</h3><button class="close-x" onclick="window.pos.closeCategoryModal()">×</button></div>
+        <div class="modal-body" style="padding-bottom:0;">
+            <input type="hidden" id="form-cat-id">
+            <div class="form-group"><label>Nombre</label><input type="text" id="form-cat-name" autocomplete="off" placeholder="Ej. POSTRES"></div>
+            <div class="form-group">
+                <label>Tipo</label>
+                <select id="form-cat-type" onchange="document.getElementById('cat-parent-group').style.display = this.value === 'sub' ? 'flex' : 'none'">
+                    <option value="main">Categoría Principal</option>
+                    <option value="sub">Subcategoría</option>
+                </select>
+            </div>
+            <div class="form-group" id="cat-parent-group" style="display:none;">
+                <label>Categoría Padre</label>
+                <select id="form-cat-parent"></select>
+            </div>
+            <div class="form-group">
+                <label>IVA por defecto (%)</label>
+                <select id="form-cat-iva">
+                    <option value="10">10%</option>
+                    <option value="21">21%</option>
+                    <option value="4">4%</option>
+                    <option value="0">0%</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeCategoryModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveCategory()">Guardar</button></div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="product-modal">
     <div class="modal" style="max-width: 400px;">
         <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
@@ -434,32 +459,6 @@
             <div class="form-group"><label>Precio con IVA incluido (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
         </div>
         <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar</button></div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="category-modal">
-    <div class="modal" style="max-width: 400px;">
-        <div class="modal-header"><h3 id="category-modal-title">Añadir Categoría</h3><button class="close-x" onclick="window.pos.closeCategoryModal()">×</button></div>
-        <div class="modal-body" style="padding-bottom:0;">
-            <input type="hidden" id="cat-form-id">
-            <div class="form-group"><label>Nombre</label><input type="text" id="cat-form-name" autocomplete="off" placeholder="Ej. POSTRES"></div>
-            <div class="form-group">
-                <label>Categoría Padre (Opcional)</label>
-                <select id="cat-form-parent">
-                    </select>
-            </div>
-            <div class="form-group">
-                <label>IVA por defecto</label>
-                <select id="cat-form-iva">
-                    <option value="10">10%</option>
-                    <option value="21">21%</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-footer" style="padding-top:20px;">
-            <button class="btn-cancel" onclick="window.pos.closeCategoryModal()">Cancelar</button>
-            <button class="btn-confirm" onclick="window.pos.saveCategory()">Guardar</button>
-        </div>
     </div>
 </div>
 
@@ -514,8 +513,7 @@ class POS {
         this.cart = [];
         this.waiters = [];
         this.orders = [];
-        this.activeMainCat = 'Todo';
-        this.activeSubCat = 'Todo';
+        this.activeCat = 'Todo';
         this.searchTerm = '';
         this.nextTicketNumber = 76283;
         
@@ -556,32 +554,17 @@ class POS {
                 else { db.collection('settings').doc('counter').set({ ticketNumber: 76283 }); this.nextTicketNumber = 76283; }
             });
 
-            // Cargar y/o inicializar Categorías
+            // Cargar categorías
             const snapCats = await db.collection('categories').get();
             this.categories = [];
-            if (snapCats.empty) {
-                const defaults = [
-                    { name: 'MENÚS', parent: '', iva: 10 },
-                    { name: 'BEBIDAS', parent: '', iva: 21 },
-                    { name: 'TERRAZA', parent: '', iva: 21 }
-                ];
-                for (let d of defaults) {
-                    const ref = await db.collection('categories').add(d);
-                    this.categories.push({ id: ref.id, ...d });
-                }
-                const terraza = this.categories.find(c => c.name === 'TERRAZA');
-                if (terraza) {
-                    const subs = [
-                        { name: 'MENÚS TERRAZA', parent: terraza.id, iva: 10 },
-                        { name: 'BEBIDAS TERRAZA', parent: terraza.id, iva: 21 }
-                    ];
-                    for (let s of subs) {
-                        const ref = await db.collection('categories').add(s);
-                        this.categories.push({ id: ref.id, ...s });
-                    }
-                }
-            } else {
-                snapCats.forEach(doc => this.categories.push({ id: doc.id, ...doc.data() }));
+            snapCats.forEach(doc => this.categories.push({ id: doc.id, ...doc.data() }));
+            
+            // Si no hay categorías, inyectar las de por defecto
+            if (this.categories.length === 0) {
+                const c1 = await db.collection('categories').add({ name: 'MENÚS', type: 'main', parentId: '', iva: 10 });
+                const c2 = await db.collection('categories').add({ name: 'BEBIDAS', type: 'main', parentId: '', iva: 21 });
+                this.categories.push({ id: c1.id, name: 'MENÚS', type: 'main', parentId: '', iva: 10 });
+                this.categories.push({ id: c2.id, name: 'BEBIDAS', type: 'main', parentId: '', iva: 21 });
             }
 
             const snapProducts = await db.collection('products').get();
@@ -632,54 +615,12 @@ class POS {
     }
 
     render() {
-        // Render Categorías Principales
-        const mainCats = this.categories.filter(c => !c.parent);
-        let catsHtml = `<button class="cat-btn ${this.activeMainCat === 'Todo' ? 'active' : ''}" onclick="window.pos.setMainCat('Todo')">Todo</button>`;
-        catsHtml += mainCats.map(c => `
-            <button class="cat-btn ${this.activeMainCat === c.name ? 'active' : ''}" onclick="window.pos.setMainCat('${c.name}')">${c.name}</button>
+        const cats = ['Todo', ...this.categories.map(c => c.name)];
+        document.getElementById('categories-bar').innerHTML = cats.map(c => `
+            <button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>
         `).join('');
-        document.getElementById('categories-bar').innerHTML = catsHtml;
 
-        // Render Subcategorías
-        const subBar = document.getElementById('subcategories-bar');
-        if (this.activeMainCat !== 'Todo') {
-            const currentMain = this.categories.find(c => c.name === this.activeMainCat);
-            if (currentMain) {
-                const subs = this.categories.filter(c => c.parent === currentMain.id);
-                if (subs.length > 0) {
-                    let subsHtml = `<button class="subcat-btn ${this.activeSubCat === 'Todo' ? 'active' : ''}" onclick="window.pos.setSubCat('Todo')">Todo ${currentMain.name}</button>`;
-                    subsHtml += subs.map(c => `
-                        <button class="subcat-btn ${this.activeSubCat === c.name ? 'active' : ''}" onclick="window.pos.setSubCat('${c.name}')">${c.name}</button>
-                    `).join('');
-                    subBar.innerHTML = subsHtml;
-                    subBar.style.display = 'flex';
-                } else {
-                    subBar.style.display = 'none';
-                }
-            } else { subBar.style.display = 'none'; }
-        } else {
-            subBar.style.display = 'none';
-        }
-
-        // Filtrar Productos
-        let filtered = this.products;
-        if (this.activeMainCat !== 'Todo') {
-            const currentMain = this.categories.find(c => c.name === this.activeMainCat);
-            if (currentMain) {
-                const subs = this.categories.filter(c => c.parent === currentMain.id);
-                if (subs.length > 0) {
-                    if (this.activeSubCat !== 'Todo') {
-                        filtered = filtered.filter(p => p.category === this.activeSubCat);
-                    } else {
-                        const validCatNames = [currentMain.name, ...subs.map(s => s.name)];
-                        filtered = filtered.filter(p => validCatNames.includes(p.category));
-                    }
-                } else {
-                    filtered = filtered.filter(p => p.category === this.activeMainCat);
-                }
-            }
-        }
-        
+        let filtered = this.activeCat === 'Todo' ? this.products : this.products.filter(p => p.category === this.activeCat);
         if (this.searchTerm) { filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm)); }
 
         document.getElementById('products-grid').innerHTML = filtered.map(p => `
@@ -692,18 +633,7 @@ class POS {
         this.updateCartUI();
     }
 
-    setMainCat(c) { 
-        this.activeMainCat = c; 
-        this.activeSubCat = 'Todo'; 
-        document.getElementById('search-input').value = ''; 
-        this.searchTerm = ''; 
-        this.render(); 
-    }
-
-    setSubCat(c) { 
-        this.activeSubCat = c; 
-        this.render(); 
-    }
+    setCat(c) { this.activeCat = c; document.getElementById('search-input').value = ''; this.searchTerm = ''; this.render(); }
 
     addToCart(id) {
         const p = this.products.find(x => x.id === id);
@@ -834,20 +764,18 @@ class POS {
         const tableNumber = document.getElementById('table-select').value;
         const currentTicketNumber = this.nextTicketNumber;
 
-        let bases = { 10: 0, 21: 0 };
-        let cuotas = { 10: 0, 21: 0 };
+        let bases = { 4: 0, 10: 0, 21: 0, 0: 0 };
+        let cuotas = { 4: 0, 10: 0, 21: 0, 0: 0 };
 
         this.cart.forEach(i => {
             if (i.invited) return;
             const lineTotal = i.price * i.qty;
-            
-            // Obtener el IVA de forma dinámica desde la categoría
-            const prodCat = this.categories.find(c => c.name === i.category);
-            const ivaRate = i.iva || (prodCat ? prodCat.iva : (i.category === 'BEBIDAS' ? 21 : 10));
-            
+            const ivaRate = i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10);
             const baseImpLine = lineTotal / (1 + (ivaRate / 100));
-            if (ivaRate === 21) { bases[21] += baseImpLine; cuotas[21] += (lineTotal - baseImpLine); }
-            else { bases[10] += baseImpLine; cuotas[10] += (lineTotal - baseImpLine); }
+            if (bases[ivaRate] !== undefined) {
+                bases[ivaRate] += baseImpLine; 
+                cuotas[ivaRate] += (lineTotal - baseImpLine); 
+            }
         });
 
         const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -857,16 +785,13 @@ class POS {
             ticketNumber: currentTicketNumber,
             dateStr, timeStr, waiter: waiterName, table: tableNumber,
             total, cash, change,
-            items: this.cart.map(i => {
-                const prodCat = this.categories.find(c => c.name === i.category);
-                return {
-                    name: i.name, qty: i.qty,
-                    price: i.invited ? 0 : i.price,
-                    originalPrice: i.price,
-                    iva: i.iva || (prodCat ? prodCat.iva : (i.category === 'BEBIDAS' ? 21 : 10)),
-                    invited: i.invited || false
-                };
-            })
+            items: this.cart.map(i => ({
+                name: i.name, qty: i.qty,
+                price: i.invited ? 0 : i.price,
+                originalPrice: i.price,
+                iva: i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10),
+                invited: i.invited || false
+            }))
         };
         db.collection('orders').add(orderData);
 
@@ -925,6 +850,8 @@ class POS {
                             <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
                         </tr>
         `;
+        if (bases[0] > 0) { h += `<tr><td style="text-align:left;">${bases[0].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">0%</td><td style="text-align:right;">${cuotas[0].toFixed(2).replace('.', ',')}</td></tr>`; }
+        if (bases[4] > 0) { h += `<tr><td style="text-align:left;">${bases[4].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">4%</td><td style="text-align:right;">${cuotas[4].toFixed(2).replace('.', ',')}</td></tr>`; }
         if (bases[10] > 0) { h += `<tr><td style="text-align:left;">${bases[10].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">10%</td><td style="text-align:right;">${cuotas[10].toFixed(2).replace('.', ',')}</td></tr>`; }
         if (bases[21] > 0) { h += `<tr><td style="text-align:left;">${bases[21].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">21%</td><td style="text-align:right;">${cuotas[21].toFixed(2).replace('.', ',')}</td></tr>`; }
 
@@ -986,11 +913,11 @@ class POS {
                     return;
                 }
                 const lineTotal = i.price * i.qty;
-                const ivaRate = i.iva || (i.category === 'BEBIDAS' ? 21 : 10); // Respaldo para históricos sin IVA incrustado
+                const ivaRate = i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10);
                 const base = lineTotal / (1 + ivaRate / 100);
                 const cuota = lineTotal - base;
                 if (ivaRate === 21) { base21 += base; cuota21 += cuota; }
-                else { base10 += base; cuota10 += cuota; }
+                else if (ivaRate === 10) { base10 += base; cuota10 += cuota; }
             });
         });
 
@@ -1047,6 +974,7 @@ class POS {
         document.getElementById('modal-z').style.display = 'flex';
     }
 
+    // ── GESTIÓN DE FILTROS ACTUALIZADA ──────────────────────────
     changeFilterType(type) {
         this.filterType = type;
         
@@ -1071,6 +999,7 @@ class POS {
         this.renderAdmin();
     }
 
+    // ── ADMIN ACTUALIZADO ─────────────────────────────────────
     renderAdmin() {
         let filteredOrders = this.orders;
         
@@ -1081,10 +1010,13 @@ class POS {
                 const oDay = parts[0];
                 const oMonth = parts[1];
                 const oYear = parts[2];
+                // Formateamos la fecha del ticket para comparaciones alfabéticas "YYYY-MM-DD"
                 const orderDateStr = `${oYear}-${oMonth}-${oDay}`;
 
                 if (this.filterType === 'date-range') {
+                    // Si el usuario no ha puesto fechas, mostramos todo
                     if (!this.filterStartDate && !this.filterEndDate) return true;
+                    // Comprobación de límites (Rango)
                     if (this.filterStartDate && orderDateStr < this.filterStartDate) return false;
                     if (this.filterEndDate && orderDateStr > this.filterEndDate) return false;
                     return true;
@@ -1119,13 +1051,13 @@ class POS {
             </tr>
         `).join('');
 
-        // Admin: Categorías
+        // Cargar vista de Categorías
         document.getElementById('categories-list').innerHTML = this.categories.map(c => {
-            const parentName = c.parent ? this.categories.find(p => p.id === c.parent)?.name : '—';
+            const parentName = c.type === 'sub' ? (this.categories.find(p => p.id === c.parentId)?.name || 'Desconocido') : '-';
             return `
             <tr>
                 <td><strong>${c.name}</strong></td>
-                <td>${parentName}</td>
+                <td>${c.type === 'main' ? 'Principal' : 'Subcategoría (' + parentName + ')'}</td>
                 <td>${c.iva}%</td>
                 <td>
                     <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openCategoryModal('${c.id}')">Editar</button>
@@ -1134,10 +1066,13 @@ class POS {
             </tr>`;
         }).join('');
 
-        // Admin: Productos
+        // Actualizar el selector de categorías en la vista de añadir Producto
+        document.getElementById('form-category').innerHTML = this.categories.map(c => 
+            `<option value="${c.name}">${c.name} (${c.iva}% IVA)</option>`
+        ).join('');
+
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
-            const cat = this.categories.find(c => c.name === p.category);
-            const ivaVisual = p.iva || (cat ? cat.iva : (p.category === 'BEBIDAS' ? 21 : 10));
+            const ivaVisual = p.iva ? p.iva : (p.category === 'BEBIDAS' ? 21 : 10);
             return `
             <tr>
                 <td><strong>${p.name}</strong></td>
@@ -1158,6 +1093,58 @@ class POS {
             </tr>
         `).join('');
     }
+
+    // ── CATEGORÍAS ─────────────────────────────────────────
+    openCategoryModal(id = null) {
+        const parentSelect = document.getElementById('form-cat-parent');
+        parentSelect.innerHTML = this.categories.filter(c => c.type === 'main' && c.id !== id).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+        if (id) {
+            const c = this.categories.find(x => x.id === id);
+            document.getElementById('category-modal-title').textContent = 'Editar Categoría';
+            document.getElementById('form-cat-id').value = c.id;
+            document.getElementById('form-cat-name').value = c.name;
+            document.getElementById('form-cat-type').value = c.type || 'main';
+            document.getElementById('cat-parent-group').style.display = c.type === 'sub' ? 'flex' : 'none';
+            if(c.type === 'sub') parentSelect.value = c.parentId;
+            document.getElementById('form-cat-iva').value = c.iva || 10;
+        } else {
+            document.getElementById('category-modal-title').textContent = 'Añadir Categoría';
+            document.getElementById('form-cat-id').value = '';
+            document.getElementById('form-cat-name').value = '';
+            document.getElementById('form-cat-type').value = 'main';
+            document.getElementById('cat-parent-group').style.display = 'none';
+            document.getElementById('form-cat-iva').value = 10;
+        }
+        document.getElementById('category-modal').style.display = 'flex';
+    }
+
+    closeCategoryModal() { document.getElementById('category-modal').style.display = 'none'; }
+
+    async saveCategory() {
+        const id = document.getElementById('form-cat-id').value;
+        const name = document.getElementById('form-cat-name').value.trim();
+        const type = document.getElementById('form-cat-type').value;
+        const parentId = type === 'sub' ? document.getElementById('form-cat-parent').value : '';
+        const iva = parseInt(document.getElementById('form-cat-iva').value);
+
+        if (!name) { alert("Por favor, introduce un nombre válido."); return; }
+
+        const data = { name, type, parentId, iva };
+        if (id) await db.collection('categories').doc(id).update(data);
+        else await db.collection('categories').add(data);
+        
+        this.closeCategoryModal();
+        this.loadData();
+    }
+
+    async delCategory(id) {
+        if (confirm("¿Seguro que deseas eliminar esta categoría? Nota: Los productos dentro seguirán existiendo pero podrías necesitar actualizarles su categoría.")) {
+            await db.collection('categories').doc(id).delete();
+            this.loadData();
+        }
+    }
+
 
     viewOrder(id) {
         const o = this.orders.find(x => x.id === id);
@@ -1184,76 +1171,21 @@ class POS {
         }
     }
 
-    // ── GESTIÓN DE CATEGORÍAS ────────────────────────────
-    openCategoryModal(id = null) {
-        const parentSelect = document.getElementById('cat-form-parent');
-        const mainCats = this.categories.filter(c => !c.parent && c.id !== id); // Evitar asignarse a sí mismo
-        parentSelect.innerHTML = '<option value="">-- Ninguna (Categoría Principal) --</option>' + 
-            mainCats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-
-        if (id) {
-            const c = this.categories.find(x => x.id === id);
-            document.getElementById('category-modal-title').textContent = 'Editar Categoría';
-            document.getElementById('cat-form-id').value = c.id;
-            document.getElementById('cat-form-name').value = c.name;
-            document.getElementById('cat-form-parent').value = c.parent || '';
-            document.getElementById('cat-form-iva').value = c.iva || '10';
-        } else {
-            document.getElementById('category-modal-title').textContent = 'Añadir Categoría';
-            document.getElementById('cat-form-id').value = '';
-            document.getElementById('cat-form-name').value = '';
-            document.getElementById('cat-form-parent').value = '';
-            document.getElementById('cat-form-iva').value = '10';
-        }
-        document.getElementById('category-modal').style.display = 'flex';
-    }
-
-    closeCategoryModal() { document.getElementById('category-modal').style.display = 'none'; }
-
-    async saveCategory() {
-        const id = document.getElementById('cat-form-id').value;
-        const name = document.getElementById('cat-form-name').value.trim();
-        const parent = document.getElementById('cat-form-parent').value;
-        const iva = parseFloat(document.getElementById('cat-form-iva').value);
-
-        if (!name) { alert("Por favor, introduce un nombre."); return; }
-
-        const data = { name, parent, iva };
-        if (id) await db.collection('categories').doc(id).update(data);
-        else await db.collection('categories').add(data);
-        
-        this.closeCategoryModal();
-        this.loadData();
-    }
-
-    async delCategory(id) {
-        if (confirm("¿Eliminar categoría? Los productos que la usan seguirán existiendo pero no aparecerán correctamente en los filtros.")) {
-            await db.collection('categories').doc(id).delete();
-            this.loadData();
-        }
-    }
-
-    // ── GESTIÓN DE PRODUCTOS ─────────────────────────────
     openProductModal(id = null) {
-        const catSelect = document.getElementById('form-category');
-        catSelect.innerHTML = this.categories.map(c => {
-            const parentName = c.parent ? this.categories.find(p => p.id === c.parent)?.name + ' > ' : '';
-            return `<option value="${c.name}" data-iva="${c.iva}">${parentName}${c.name} (${c.iva}% IVA)</option>`;
-        }).join('');
-
         if (id) {
             const p = this.products.find(x => x.id === id);
             document.getElementById('product-modal-title').textContent = 'Editar Producto';
             document.getElementById('form-id').value = p.id;
             document.getElementById('form-name').value = p.name;
-            document.getElementById('form-category').value = p.category;
+            if (document.querySelector(`#form-category option[value="${p.category}"]`)) {
+                document.getElementById('form-category').value = p.category;
+            }
             document.getElementById('form-price').value = p.price;
         } else {
             document.getElementById('product-modal-title').textContent = 'Añadir Producto';
             document.getElementById('form-id').value = '';
             document.getElementById('form-name').value = '';
-            // Pre-seleccionar la primera categoría si existe
-            if(this.categories.length > 0) document.getElementById('form-category').value = this.categories[0].name;
+            if (this.categories.length > 0) document.getElementById('form-category').selectedIndex = 0;
             document.getElementById('form-price').value = '';
         }
         document.getElementById('product-modal').style.display = 'flex';
@@ -1264,18 +1196,16 @@ class POS {
     async saveProduct() {
         const id = document.getElementById('form-id').value;
         const name = document.getElementById('form-name').value.trim();
-        
-        const catSelect = document.getElementById('form-category');
-        const category = catSelect.value;
-        const iva = parseFloat(catSelect.options[catSelect.selectedIndex].dataset.iva);
+        const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
         
+        const catObj = this.categories.find(c => c.name === category);
+        const iva = catObj ? catObj.iva : 10;
+
         if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
-        
         const data = { name, category, price, iva };
         if (id) await db.collection('products').doc(id).update(data);
         else await db.collection('products').add(data);
-        
         this.closeProductModal();
         this.loadData();
     }
