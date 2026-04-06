@@ -346,19 +346,6 @@
 
             <div class="admin-section">
                 <div class="admin-header">
-                    <h2>Gestión de Categorías</h2>
-                    <button class="btn-primary" onclick="window.pos.openCategoryModal()">+ Añadir Categoría</button>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Nombre</th><th>Tipo</th><th>IVA</th><th>Acciones</th></tr></thead>
-                        <tbody id="categories-list"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="admin-section">
-                <div class="admin-header">
                     <h2>Gestión de Productos</h2>
                     <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
                 </div>
@@ -414,37 +401,6 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="category-modal">
-    <div class="modal" style="max-width: 400px;">
-        <div class="modal-header"><h3 id="category-modal-title">Añadir Categoría</h3><button class="close-x" onclick="window.pos.closeCategoryModal()">×</button></div>
-        <div class="modal-body" style="padding-bottom:0;">
-            <input type="hidden" id="form-cat-id">
-            <div class="form-group"><label>Nombre</label><input type="text" id="form-cat-name" autocomplete="off" placeholder="Ej. POSTRES"></div>
-            <div class="form-group">
-                <label>Tipo</label>
-                <select id="form-cat-type" onchange="document.getElementById('cat-parent-group').style.display = this.value === 'sub' ? 'flex' : 'none'">
-                    <option value="main">Categoría Principal</option>
-                    <option value="sub">Subcategoría</option>
-                </select>
-            </div>
-            <div class="form-group" id="cat-parent-group" style="display:none;">
-                <label>Categoría Padre</label>
-                <select id="form-cat-parent"></select>
-            </div>
-            <div class="form-group">
-                <label>IVA por defecto (%)</label>
-                <select id="form-cat-iva">
-                    <option value="10">10%</option>
-                    <option value="21">21%</option>
-                    <option value="4">4%</option>
-                    <option value="0">0%</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeCategoryModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveCategory()">Guardar</button></div>
-    </div>
-</div>
-
 <div class="modal-overlay" id="product-modal">
     <div class="modal" style="max-width: 400px;">
         <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
@@ -452,9 +408,11 @@
             <input type="hidden" id="form-id">
             <div class="form-group"><label>Nombre</label><input type="text" id="form-name" autocomplete="off" placeholder="Ej. Café Solo"></div>
             <div class="form-group">
-                <label>Categoría</label>
+                <label>Categoría e IVA</label>
                 <select id="form-category">
-                    </select>
+                    <option value="MENÚS">MENÚS y COMIDA (10% IVA)</option>
+                    <option value="BEBIDAS">BEBIDAS (21% IVA)</option>
+                </select>
             </div>
             <div class="form-group"><label>Precio con IVA incluido (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
         </div>
@@ -509,7 +467,6 @@ const db = firebase.firestore();
 class POS {
     constructor() {
         this.products = [];
-        this.categories = [];
         this.cart = [];
         this.waiters = [];
         this.orders = [];
@@ -553,19 +510,6 @@ class POS {
                 if (doc.exists) { this.nextTicketNumber = doc.data().ticketNumber; }
                 else { db.collection('settings').doc('counter').set({ ticketNumber: 76283 }); this.nextTicketNumber = 76283; }
             });
-
-            // Cargar categorías
-            const snapCats = await db.collection('categories').get();
-            this.categories = [];
-            snapCats.forEach(doc => this.categories.push({ id: doc.id, ...doc.data() }));
-            
-            // Si no hay categorías, inyectar las de por defecto
-            if (this.categories.length === 0) {
-                const c1 = await db.collection('categories').add({ name: 'MENÚS', type: 'main', parentId: '', iva: 10 });
-                const c2 = await db.collection('categories').add({ name: 'BEBIDAS', type: 'main', parentId: '', iva: 21 });
-                this.categories.push({ id: c1.id, name: 'MENÚS', type: 'main', parentId: '', iva: 10 });
-                this.categories.push({ id: c2.id, name: 'BEBIDAS', type: 'main', parentId: '', iva: 21 });
-            }
 
             const snapProducts = await db.collection('products').get();
             this.products = [];
@@ -615,7 +559,7 @@ class POS {
     }
 
     render() {
-        const cats = ['Todo', ...this.categories.map(c => c.name)];
+        const cats = ['Todo', 'MENÚS', 'BEBIDAS'];
         document.getElementById('categories-bar').innerHTML = cats.map(c => `
             <button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>
         `).join('');
@@ -764,18 +708,16 @@ class POS {
         const tableNumber = document.getElementById('table-select').value;
         const currentTicketNumber = this.nextTicketNumber;
 
-        let bases = { 4: 0, 10: 0, 21: 0, 0: 0 };
-        let cuotas = { 4: 0, 10: 0, 21: 0, 0: 0 };
+        let bases = { 10: 0, 21: 0 };
+        let cuotas = { 10: 0, 21: 0 };
 
         this.cart.forEach(i => {
             if (i.invited) return;
             const lineTotal = i.price * i.qty;
-            const ivaRate = i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10);
+            const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
             const baseImpLine = lineTotal / (1 + (ivaRate / 100));
-            if (bases[ivaRate] !== undefined) {
-                bases[ivaRate] += baseImpLine; 
-                cuotas[ivaRate] += (lineTotal - baseImpLine); 
-            }
+            if (ivaRate === 21) { bases[21] += baseImpLine; cuotas[21] += (lineTotal - baseImpLine); }
+            else { bases[10] += baseImpLine; cuotas[10] += (lineTotal - baseImpLine); }
         });
 
         const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -789,7 +731,7 @@ class POS {
                 name: i.name, qty: i.qty,
                 price: i.invited ? 0 : i.price,
                 originalPrice: i.price,
-                iva: i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10),
+                iva: i.category === 'BEBIDAS' ? 21 : 10,
                 invited: i.invited || false
             }))
         };
@@ -850,8 +792,6 @@ class POS {
                             <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
                         </tr>
         `;
-        if (bases[0] > 0) { h += `<tr><td style="text-align:left;">${bases[0].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">0%</td><td style="text-align:right;">${cuotas[0].toFixed(2).replace('.', ',')}</td></tr>`; }
-        if (bases[4] > 0) { h += `<tr><td style="text-align:left;">${bases[4].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">4%</td><td style="text-align:right;">${cuotas[4].toFixed(2).replace('.', ',')}</td></tr>`; }
         if (bases[10] > 0) { h += `<tr><td style="text-align:left;">${bases[10].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">10%</td><td style="text-align:right;">${cuotas[10].toFixed(2).replace('.', ',')}</td></tr>`; }
         if (bases[21] > 0) { h += `<tr><td style="text-align:left;">${bases[21].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">21%</td><td style="text-align:right;">${cuotas[21].toFixed(2).replace('.', ',')}</td></tr>`; }
 
@@ -913,11 +853,11 @@ class POS {
                     return;
                 }
                 const lineTotal = i.price * i.qty;
-                const ivaRate = i.iva ? i.iva : (i.category === 'BEBIDAS' ? 21 : 10);
+                const ivaRate = i.iva || (i.category === 'BEBIDAS' ? 21 : 10);
                 const base = lineTotal / (1 + ivaRate / 100);
                 const cuota = lineTotal - base;
                 if (ivaRate === 21) { base21 += base; cuota21 += cuota; }
-                else if (ivaRate === 10) { base10 += base; cuota10 += cuota; }
+                else { base10 += base; cuota10 += cuota; }
             });
         });
 
@@ -1051,28 +991,8 @@ class POS {
             </tr>
         `).join('');
 
-        // Cargar vista de Categorías
-        document.getElementById('categories-list').innerHTML = this.categories.map(c => {
-            const parentName = c.type === 'sub' ? (this.categories.find(p => p.id === c.parentId)?.name || 'Desconocido') : '-';
-            return `
-            <tr>
-                <td><strong>${c.name}</strong></td>
-                <td>${c.type === 'main' ? 'Principal' : 'Subcategoría (' + parentName + ')'}</td>
-                <td>${c.iva}%</td>
-                <td>
-                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openCategoryModal('${c.id}')">Editar</button>
-                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delCategory('${c.id}')">Eliminar</button>
-                </td>
-            </tr>`;
-        }).join('');
-
-        // Actualizar el selector de categorías en la vista de añadir Producto
-        document.getElementById('form-category').innerHTML = this.categories.map(c => 
-            `<option value="${c.name}">${c.name} (${c.iva}% IVA)</option>`
-        ).join('');
-
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
-            const ivaVisual = p.iva ? p.iva : (p.category === 'BEBIDAS' ? 21 : 10);
+            const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
             return `
             <tr>
                 <td><strong>${p.name}</strong></td>
@@ -1093,58 +1013,6 @@ class POS {
             </tr>
         `).join('');
     }
-
-    // ── CATEGORÍAS ─────────────────────────────────────────
-    openCategoryModal(id = null) {
-        const parentSelect = document.getElementById('form-cat-parent');
-        parentSelect.innerHTML = this.categories.filter(c => c.type === 'main' && c.id !== id).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-
-        if (id) {
-            const c = this.categories.find(x => x.id === id);
-            document.getElementById('category-modal-title').textContent = 'Editar Categoría';
-            document.getElementById('form-cat-id').value = c.id;
-            document.getElementById('form-cat-name').value = c.name;
-            document.getElementById('form-cat-type').value = c.type || 'main';
-            document.getElementById('cat-parent-group').style.display = c.type === 'sub' ? 'flex' : 'none';
-            if(c.type === 'sub') parentSelect.value = c.parentId;
-            document.getElementById('form-cat-iva').value = c.iva || 10;
-        } else {
-            document.getElementById('category-modal-title').textContent = 'Añadir Categoría';
-            document.getElementById('form-cat-id').value = '';
-            document.getElementById('form-cat-name').value = '';
-            document.getElementById('form-cat-type').value = 'main';
-            document.getElementById('cat-parent-group').style.display = 'none';
-            document.getElementById('form-cat-iva').value = 10;
-        }
-        document.getElementById('category-modal').style.display = 'flex';
-    }
-
-    closeCategoryModal() { document.getElementById('category-modal').style.display = 'none'; }
-
-    async saveCategory() {
-        const id = document.getElementById('form-cat-id').value;
-        const name = document.getElementById('form-cat-name').value.trim();
-        const type = document.getElementById('form-cat-type').value;
-        const parentId = type === 'sub' ? document.getElementById('form-cat-parent').value : '';
-        const iva = parseInt(document.getElementById('form-cat-iva').value);
-
-        if (!name) { alert("Por favor, introduce un nombre válido."); return; }
-
-        const data = { name, type, parentId, iva };
-        if (id) await db.collection('categories').doc(id).update(data);
-        else await db.collection('categories').add(data);
-        
-        this.closeCategoryModal();
-        this.loadData();
-    }
-
-    async delCategory(id) {
-        if (confirm("¿Seguro que deseas eliminar esta categoría? Nota: Los productos dentro seguirán existiendo pero podrías necesitar actualizarles su categoría.")) {
-            await db.collection('categories').doc(id).delete();
-            this.loadData();
-        }
-    }
-
 
     viewOrder(id) {
         const o = this.orders.find(x => x.id === id);
@@ -1177,15 +1045,13 @@ class POS {
             document.getElementById('product-modal-title').textContent = 'Editar Producto';
             document.getElementById('form-id').value = p.id;
             document.getElementById('form-name').value = p.name;
-            if (document.querySelector(`#form-category option[value="${p.category}"]`)) {
-                document.getElementById('form-category').value = p.category;
-            }
+            document.getElementById('form-category').value = p.category === 'BEBIDAS' ? 'BEBIDAS' : 'MENÚS';
             document.getElementById('form-price').value = p.price;
         } else {
             document.getElementById('product-modal-title').textContent = 'Añadir Producto';
             document.getElementById('form-id').value = '';
             document.getElementById('form-name').value = '';
-            if (this.categories.length > 0) document.getElementById('form-category').selectedIndex = 0;
+            document.getElementById('form-category').value = 'MENÚS';
             document.getElementById('form-price').value = '';
         }
         document.getElementById('product-modal').style.display = 'flex';
@@ -1198,10 +1064,7 @@ class POS {
         const name = document.getElementById('form-name').value.trim();
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
-        
-        const catObj = this.categories.find(c => c.name === category);
-        const iva = catObj ? catObj.iva : 10;
-
+        const iva = category === 'BEBIDAS' ? 21 : 10;
         if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
         const data = { name, category, price, iva };
         if (id) await db.collection('products').doc(id).update(data);
