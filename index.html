@@ -49,7 +49,6 @@
         .nav-btn svg { width: 28px; height: 28px; fill: currentColor; }
         .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
 
-        /* Botón Z especial en sidebar */
         .nav-btn-z {
             width: 70px; height: 70px; border-radius: 16px; background: transparent;
             color: #94a3b8; display: flex; flex-direction: column; align-items: center;
@@ -80,10 +79,29 @@
         .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
 
-        #categories-bar { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 20px; flex-shrink: 0; scrollbar-width: none; }
-        #categories-bar::-webkit-scrollbar { display: none; }
+        /* MODIFICADO: Sistema de submenús */
+        #categories-bar { display: flex; gap: 12px; overflow: visible; padding-bottom: 20px; flex-shrink: 0; flex-wrap: wrap; z-index: 10; position: relative; }
         .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; font-size: 15px; white-space: nowrap; border: 1px solid var(--border-glass); }
         .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
+
+        .dropdown-container { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none; position: absolute; top: calc(100% - 12px); left: 0;
+            background: white; min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000; border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--border-glass);
+        }
+        .dropdown-container:hover .dropdown-content,
+        .dropdown-container.active .dropdown-content { display: block; }
+        .dropdown-content button {
+            width: 100%; padding: 16px 20px; text-align: left;
+            background: transparent; border: none; font-size: 14px;
+            font-weight: 700; color: var(--text-muted);
+            border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s;
+        }
+        .dropdown-content button:last-child { border-bottom: none; }
+        .dropdown-content button:hover { background: #f8fafc; color: var(--checkout-rust); padding-left: 25px; }
 
         #products-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; overflow-y: auto; align-content: start; padding-bottom: 100px; }
         .product-card { background: rgba(255,255,255,0.8); border-radius: 22px; padding: 20px; height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease; }
@@ -288,6 +306,7 @@
                     <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
                 </div>
                 <div id="categories-bar"></div>
+                
                 <div id="products-grid"></div>
                 <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
                     <div class="fab-top"><span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span><span id="mobile-cart-total">0,00 €</span></div>
@@ -410,8 +429,14 @@
             <div class="form-group">
                 <label>Categoría e IVA</label>
                 <select id="form-category">
-                    <option value="MENÚS">MENÚS y COMIDA (10% IVA)</option>
-                    <option value="BEBIDAS">BEBIDAS (21% IVA)</option>
+                    <optgroup label="SALÓN">
+                        <option value="MENÚS">MENÚS y COMIDA (10% IVA)</option>
+                        <option value="BEBIDAS">BEBIDAS (21% IVA)</option>
+                    </optgroup>
+                    <optgroup label="TERRAZA">
+                        <option value="MENÚS TERRAZA">MENÚS TERRAZA (10% IVA)</option>
+                        <option value="BEBIDAS TERRAZA">BEBIDAS TERRAZA (21% IVA)</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="form-group"><label>Precio con IVA incluido (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
@@ -470,7 +495,8 @@ class POS {
         this.cart = [];
         this.waiters = [];
         this.orders = [];
-        this.activeCat = 'Todo';
+        // Se inicializa en "Todos"
+        this.activeCat = 'Todos';
         this.searchTerm = '';
         this.nextTicketNumber = 76283;
         
@@ -486,7 +512,6 @@ class POS {
     async init() {
         this.bindEvents();
         
-        // Inicializar valores de fecha por defecto (Hoy a Hoy)
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -523,7 +548,6 @@ class POS {
                 this.waiters.push({ id: docRef.id, name: 'SAMUEL' });
             }
 
-            // Historial en tiempo real
             db.collection('orders').orderBy('ticketNumber', 'desc').onSnapshot(snap => {
                 this.orders = [];
                 snap.forEach(doc => this.orders.push({ id: doc.id, ...doc.data() }));
@@ -559,12 +583,32 @@ class POS {
     }
 
     render() {
-        const cats = ['Todo', 'MENÚS', 'BEBIDAS'];
-        document.getElementById('categories-bar').innerHTML = cats.map(c => `
-            <button class="cat-btn ${c === this.activeCat ? 'active' : ''}" onclick="window.pos.setCat('${c}')">${c}</button>
-        `).join('');
+        // Lógica visual para saber qué botón padre destacar
+        const isSalon = this.activeCat === 'MENÚS' || this.activeCat === 'BEBIDAS';
+        const isTerraza = this.activeCat === 'MENÚS TERRAZA' || this.activeCat === 'BEBIDAS TERRAZA';
+        
+        // Estructura de submenús generada
+        document.getElementById('categories-bar').innerHTML = `
+            <button class="cat-btn ${this.activeCat === 'Todos' ? 'active' : ''}" onclick="window.pos.setCat('Todos')">Todos</button>
+            
+            <div class="dropdown-container">
+                <button class="cat-btn ${isSalon ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">SALÓN ▾</button>
+                <div class="dropdown-content">
+                    <button onclick="window.pos.setCat('MENÚS')">MENÚS (10% IVA)</button>
+                    <button onclick="window.pos.setCat('BEBIDAS')">BEBIDAS (21% IVA)</button>
+                </div>
+            </div>
+            
+            <div class="dropdown-container">
+                <button class="cat-btn ${isTerraza ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">TERRAZA ▾</button>
+                <div class="dropdown-content">
+                    <button onclick="window.pos.setCat('MENÚS TERRAZA')">MENÚS TERRAZA (10% IVA)</button>
+                    <button onclick="window.pos.setCat('BEBIDAS TERRAZA')">BEBIDAS TERRAZA (21% IVA)</button>
+                </div>
+            </div>
+        `;
 
-        let filtered = this.activeCat === 'Todo' ? this.products : this.products.filter(p => p.category === this.activeCat);
+        let filtered = this.activeCat === 'Todos' ? this.products : this.products.filter(p => p.category === this.activeCat);
         if (this.searchTerm) { filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm)); }
 
         document.getElementById('products-grid').innerHTML = filtered.map(p => `
@@ -714,7 +758,8 @@ class POS {
         this.cart.forEach(i => {
             if (i.invited) return;
             const lineTotal = i.price * i.qty;
-            const ivaRate = i.category === 'BEBIDAS' ? 21 : 10;
+            // Calculo para detectar ambas variantes de Bebidas (Salón o Terraza)
+            const ivaRate = (i.category && i.category.includes('BEBIDAS')) ? 21 : 10;
             const baseImpLine = lineTotal / (1 + (ivaRate / 100));
             if (ivaRate === 21) { bases[21] += baseImpLine; cuotas[21] += (lineTotal - baseImpLine); }
             else { bases[10] += baseImpLine; cuotas[10] += (lineTotal - baseImpLine); }
@@ -731,7 +776,7 @@ class POS {
                 name: i.name, qty: i.qty,
                 price: i.invited ? 0 : i.price,
                 originalPrice: i.price,
-                iva: i.category === 'BEBIDAS' ? 21 : 10,
+                iva: (i.category && i.category.includes('BEBIDAS')) ? 21 : 10,
                 invited: i.invited || false
             }))
         };
@@ -853,7 +898,7 @@ class POS {
                     return;
                 }
                 const lineTotal = i.price * i.qty;
-                const ivaRate = i.iva || (i.category === 'BEBIDAS' ? 21 : 10);
+                const ivaRate = i.iva || ((i.category && i.category.includes('BEBIDAS')) ? 21 : 10);
                 const base = lineTotal / (1 + ivaRate / 100);
                 const cuota = lineTotal - base;
                 if (ivaRate === 21) { base21 += base; cuota21 += cuota; }
@@ -914,7 +959,6 @@ class POS {
         document.getElementById('modal-z').style.display = 'flex';
     }
 
-    // ── GESTIÓN DE FILTROS ACTUALIZADA ──────────────────────────
     changeFilterType(type) {
         this.filterType = type;
         
@@ -939,7 +983,6 @@ class POS {
         this.renderAdmin();
     }
 
-    // ── ADMIN ACTUALIZADO ─────────────────────────────────────
     renderAdmin() {
         let filteredOrders = this.orders;
         
@@ -950,13 +993,10 @@ class POS {
                 const oDay = parts[0];
                 const oMonth = parts[1];
                 const oYear = parts[2];
-                // Formateamos la fecha del ticket para comparaciones alfabéticas "YYYY-MM-DD"
                 const orderDateStr = `${oYear}-${oMonth}-${oDay}`;
 
                 if (this.filterType === 'date-range') {
-                    // Si el usuario no ha puesto fechas, mostramos todo
                     if (!this.filterStartDate && !this.filterEndDate) return true;
-                    // Comprobación de límites (Rango)
                     if (this.filterStartDate && orderDateStr < this.filterStartDate) return false;
                     if (this.filterEndDate && orderDateStr > this.filterEndDate) return false;
                     return true;
@@ -992,7 +1032,7 @@ class POS {
         `).join('');
 
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
-            const ivaVisual = p.category === 'BEBIDAS' ? 21 : 10;
+            const ivaVisual = (p.category && p.category.includes('BEBIDAS')) ? 21 : 10;
             return `
             <tr>
                 <td><strong>${p.name}</strong></td>
@@ -1045,7 +1085,7 @@ class POS {
             document.getElementById('product-modal-title').textContent = 'Editar Producto';
             document.getElementById('form-id').value = p.id;
             document.getElementById('form-name').value = p.name;
-            document.getElementById('form-category').value = p.category === 'BEBIDAS' ? 'BEBIDAS' : 'MENÚS';
+            document.getElementById('form-category').value = p.category || 'MENÚS';
             document.getElementById('form-price').value = p.price;
         } else {
             document.getElementById('product-modal-title').textContent = 'Añadir Producto';
@@ -1064,7 +1104,8 @@ class POS {
         const name = document.getElementById('form-name').value.trim();
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
-        const iva = category === 'BEBIDAS' ? 21 : 10;
+        const iva = category.includes('BEBIDAS') ? 21 : 10;
+        
         if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
         const data = { name, category, price, iva };
         if (id) await db.collection('products').doc(id).update(data);
