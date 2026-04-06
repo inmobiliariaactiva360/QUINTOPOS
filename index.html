@@ -1,1064 +1,302 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>QUINTOPOS - Premium</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-
-<style>
-    :root {
-        --cream: #faf8f5;
-        --cream-dark: #f2ede6;
-        --warm-white: #ffffff;
-        --ink: #1a1714;
-        --ink-light: #4a4540;
-        --ink-muted: #9a928a;
-        --terracotta: #c25a42;
-        --terracotta-light: #d4705a;
-        --terracotta-pale: #f9ede9;
-        --sage: #5a7a6a;
-        --sage-light: #7a9a8a;
-        --sage-pale: #eef4f0;
-        --gold: #c4983a;
-        --gold-pale: #fdf6e8;
-        --border: #e8e2d9;
-        --border-light: #f0ebe3;
-        --shadow-sm: 0 1px 3px rgba(26,23,20,0.06), 0 1px 2px rgba(26,23,20,0.04);
-        --shadow-md: 0 4px 16px rgba(26,23,20,0.08), 0 2px 6px rgba(26,23,20,0.04);
-        --shadow-lg: 0 12px 40px rgba(26,23,20,0.10), 0 4px 12px rgba(26,23,20,0.06);
-        --shadow-xl: 0 24px 64px rgba(26,23,20,0.14), 0 8px 20px rgba(26,23,20,0.08);
-        --radius-sm: 8px;
-        --radius-md: 12px;
-        --radius-lg: 18px;
-        --radius-xl: 24px;
-        --sidebar-w: 80px;
-        --font-display: 'Playfair Display', Georgia, serif;
-        --font-body: 'DM Sans', system-ui, sans-serif;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     
-    @media screen {
-        html, body {
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background: var(--cream);
-            color: var(--ink);
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            font-family: var(--font-body);
-            -webkit-font-smoothing: antialiased;
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #3730a3;
+            --bg-gradient: linear-gradient(135deg, #f4f7f6 0%, #e2e8f0 100%);
+            --surface: rgba(255, 255, 255, 0.75);
+            --surface-solid: #ffffff;
+            --text-main: #111827;
+            --text-muted: #64748b;
+            --border-glass: rgba(255, 255, 255, 0.6);
+            --sidebar-bg: #0f172a;
+            --sidebar-active: rgba(255, 255, 255, 0.15);
+            --checkout-rust: #c25a42;
+            --checkout-green-bg: #eaf5ee;
+            --checkout-green-text: #41815d;
+            --checkout-btn-green: #abcbc0;
+            --checkout-border: #e5e7eb;
+            --danger: #ef4444;
+            --gold: #f59e0b;
+            --radius-lg-modal: 20px;
         }
-    }
 
-    button { cursor: pointer; border: none; outline: none; font-family: var(--font-body); -webkit-tap-highlight-color: transparent; transition: all 0.15s ease; }
-    button:active { transform: scale(0.97); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
-    input, select { font-family: var(--font-body); user-select: auto; -webkit-tap-highlight-color: transparent; }
-    input:focus, select:focus { outline: none; }
-
-    /* ===================== LAYOUT ===================== */
-    #app-root { display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; }
-
-    /* ===================== SIDEBAR ===================== */
-    #sidebar {
-        width: var(--sidebar-w);
-        background: var(--ink);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 0 16px;
-        gap: 4px;
-        z-index: 50;
-        flex-shrink: 0;
-        position: relative;
-    }
-    #sidebar::after {
-        content: '';
-        position: absolute;
-        right: 0; top: 0; bottom: 0;
-        width: 1px;
-        background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent);
-    }
-
-    .brand-logo {
-        color: white;
-        font-family: var(--font-display);
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 2.5px;
-        text-align: center;
-        margin-bottom: 16px;
-        opacity: 0.9;
-        text-transform: uppercase;
-    }
-
-    .nav-btn {
-        width: 60px;
-        height: 60px;
-        border-radius: 14px;
-        background: transparent;
-        color: rgba(255,255,255,0.38);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.3px;
-        gap: 5px;
-        transition: all 0.2s ease;
-    }
-    .nav-btn svg { width: 22px; height: 22px; fill: currentColor; }
-    .nav-btn:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.06); }
-    .nav-btn.active {
-        background: rgba(255,255,255,0.12);
-        color: white;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
-    }
-    .nav-btn.active::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        width: 3px;
-        height: 28px;
-        background: var(--terracotta-light);
-        border-radius: 0 3px 3px 0;
-    }
-    .nav-btn { position: relative; }
-
-    .nav-btn-z {
-        width: 60px;
-        height: 60px;
-        border-radius: 14px;
-        background: transparent;
-        color: rgba(255,255,255,0.38);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 600;
-        gap: 4px;
-        margin-top: auto;
-        margin-bottom: 4px;
-        transition: all 0.2s ease;
-    }
-    .nav-btn-z:hover { background: rgba(255,255,255,0.06); }
-    .nav-btn-z .z-icon {
-        font-size: 26px;
-        font-weight: 900;
-        font-style: italic;
-        font-family: var(--font-display);
-        background: linear-gradient(135deg, #c4983a, #e8c068, #c4983a);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1;
-    }
-    .nav-btn-z .z-label { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase; }
-
-    /* ===================== MAIN ===================== */
-    #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
-
-    #mobile-header {
-        display: none;
-        padding: 14px 20px;
-        background: var(--warm-white);
-        border-bottom: 1px solid var(--border);
-        z-index: 20;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        box-shadow: var(--shadow-sm);
-    }
-    .mobile-brand { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: 1px; }
-    .mobile-brand span { color: var(--terracotta); }
-
-    .view { flex: 1; display: none; height: 100%; overflow: hidden; width: 100%; }
-    .view.active { display: flex; }
-    #pos-view { flex-direction: row; width: 100%; }
-
-    /* ===================== PRODUCTS AREA ===================== */
-    #products-area {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding: 24px 28px;
-        overflow: hidden;
-        min-width: 0;
-        background: var(--cream);
-    }
-
-    .area-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        flex-shrink: 0;
-    }
-    .area-title {
-        font-family: var(--font-display);
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--ink);
-        letter-spacing: -0.3px;
-    }
-    .area-subtitle { font-size: 13px; color: var(--ink-muted); margin-top: 1px; font-weight: 400; }
-
-    /* Search */
-    .search-bar-container { margin-bottom: 18px; position: relative; flex-shrink: 0; }
-    .search-bar-container input {
-        width: 100%;
-        padding: 13px 18px 13px 46px;
-        border-radius: var(--radius-lg);
-        border: 1.5px solid var(--border);
-        background: var(--warm-white);
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--ink);
-        box-shadow: var(--shadow-sm);
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .search-bar-container input::placeholder { color: var(--ink-muted); font-weight: 400; }
-    .search-bar-container input:focus {
-        border-color: var(--terracotta);
-        box-shadow: 0 0 0 3px rgba(194,90,66,0.08), var(--shadow-sm);
-    }
-    .search-icon {
-        position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-        color: var(--ink-muted); width: 18px; height: 18px;
-    }
-
-    /* Categories */
-    #categories-bar {
-        display: flex;
-        gap: 8px;
-        overflow: visible;
-        padding-bottom: 20px;
-        flex-shrink: 0;
-        flex-wrap: wrap;
-        z-index: 10;
-        position: relative;
-    }
-
-    .cat-btn {
-        padding: 9px 20px;
-        border-radius: 30px;
-        background: var(--warm-white);
-        color: var(--ink-light);
-        font-weight: 600;
-        font-size: 13px;
-        white-space: nowrap;
-        border: 1.5px solid var(--border);
-        letter-spacing: 0.1px;
-        box-shadow: var(--shadow-sm);
-        transition: all 0.18s ease;
-    }
-    .cat-btn:hover { border-color: var(--ink-muted); color: var(--ink); }
-    .cat-btn.active {
-        background: var(--ink);
-        color: white;
-        border-color: var(--ink);
-        box-shadow: var(--shadow-md);
-    }
-
-    .dropdown-container { position: relative; display: inline-block; }
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        background: var(--warm-white);
-        min-width: 230px;
-        box-shadow: var(--shadow-xl);
-        z-index: 1000;
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        border: 1px solid var(--border);
-    }
-    .dropdown-container:hover .dropdown-content,
-    .dropdown-container.active .dropdown-content { display: block; }
-    .dropdown-content button {
-        width: 100%;
-        padding: 14px 18px;
-        text-align: left;
-        background: transparent;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--ink-light);
-        border-bottom: 1px solid var(--border-light);
-        cursor: pointer;
-        transition: all 0.15s;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .dropdown-content button::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .dropdown-content button:last-child { border-bottom: none; }
-    .dropdown-content button:hover { background: var(--cream); color: var(--terracotta); padding-left: 22px; }
-    .dropdown-content button:hover::before { background: var(--terracotta); }
-
-    /* Products grid */
-    #products-grid {
-        flex: 1;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-        gap: 14px;
-        overflow-y: auto;
-        align-content: start;
-        padding-bottom: 80px;
-        padding-right: 4px;
-    }
-    #products-grid::-webkit-scrollbar { width: 4px; }
-    #products-grid::-webkit-scrollbar-track { background: transparent; }
-    #products-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .product-card {
-        background: var(--warm-white);
-        border-radius: var(--radius-lg);
-        padding: 18px 16px;
-        min-height: 130px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        border: 1.5px solid var(--border);
-        box-shadow: var(--shadow-sm);
-        transition: all 0.2s ease;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-    .product-card::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--ink);
-        opacity: 0;
-        transition: opacity 0.15s;
-        border-radius: inherit;
-    }
-    .product-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--ink-muted); }
-    .product-card:active { transform: scale(0.97); box-shadow: var(--shadow-sm); }
-    .product-card:active::after { opacity: 0.03; }
-
-    .product-card.is-terraza {
-        background: linear-gradient(145deg, #f4faf6, #edf6f0);
-        border-color: #c8e6d4;
-    }
-    .product-card.is-terraza:hover { border-color: var(--sage-light); }
-
-    .product-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .product-icon { font-size: 20px; line-height: 1; }
-    .product-iva-badge {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.3px;
-        padding: 2px 7px;
-        border-radius: 20px;
-    }
-    .is-salon .product-iva-badge { background: #f0ecff; color: #6344b5; }
-    .is-terraza .product-iva-badge { background: #dcf0e4; color: var(--sage); }
-
-    .product-name {
-        font-size: 14px;
-        font-weight: 700;
-        color: var(--ink);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        line-height: 1.3;
-        margin-top: 10px;
-        flex: 1;
-    }
-    .is-terraza .product-name { color: #2d5040; }
-    .product-price {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--terracotta);
-        letter-spacing: -0.5px;
-        margin-top: 8px;
-        font-family: var(--font-display);
-    }
-    .is-terraza .product-price { color: var(--sage); }
-
-    /* ===================== TICKET PANEL ===================== */
-    #ticket-panel {
-        width: 380px;
-        min-width: 320px;
-        background: var(--warm-white);
-        border-left: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        box-shadow: -6px 0 24px rgba(26,23,20,0.04);
-        z-index: 40;
-        transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    .ticket-header {
-        padding: 22px 24px 18px;
-        border-bottom: 1px solid var(--border-light);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--warm-white);
-        flex-shrink: 0;
-    }
-    .ticket-header-left { display: flex; flex-direction: column; gap: 2px; }
-    .ticket-header h2 {
-        font-family: var(--font-display);
-        font-size: 18px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-    .ticket-count { font-size: 12px; color: var(--ink-muted); font-weight: 400; }
-    .ticket-header-right { display: flex; align-items: center; gap: 10px; }
-    .clear-btn {
-        color: var(--terracotta);
-        background: var(--terracotta-pale);
-        font-weight: 600;
-        font-size: 12px;
-        padding: 6px 12px;
-        border-radius: 20px;
-        letter-spacing: 0.2px;
-        transition: all 0.15s;
-    }
-    .clear-btn:hover { background: var(--terracotta); color: white; }
-    .close-ticket-btn {
-        display: none;
-        width: 32px; height: 32px;
-        background: var(--cream-dark);
-        border-radius: 50%;
-        font-size: 18px;
-        color: var(--ink-light);
-        align-items: center;
-        justify-content: center;
-    }
-
-    #ticket-items {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px 16px;
-    }
-    #ticket-items::-webkit-scrollbar { width: 3px; }
-    #ticket-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .ticket-item {
-        display: flex;
-        flex-direction: column;
-        padding: 14px 0;
-        border-bottom: 1px solid var(--border-light);
-        gap: 10px;
-    }
-    .ticket-item:last-child { border-bottom: none; }
-
-    .ticket-item.is-invite {
-        background: var(--gold-pale);
-        border-radius: var(--radius-sm);
-        padding: 12px 10px;
-        margin: 4px -10px;
-        border-bottom: none;
-    }
-
-    .item-info { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .item-name-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .item-name { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; }
-    .invite-badge {
-        font-size: 9px;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--gold), #e8c068);
-        color: white;
-        padding: 2px 8px;
-        border-radius: 20px;
-        letter-spacing: 0.8px;
-        text-transform: uppercase;
-        width: fit-content;
-    }
-    .item-total { font-size: 15px; font-weight: 700; color: var(--ink-light); white-space: nowrap; font-family: var(--font-display); }
-    .item-total.free { color: var(--gold); }
-
-    .item-controls { display: flex; justify-content: space-between; align-items: center; }
-    .qty-controls {
-        display: flex;
-        align-items: center;
-        background: var(--cream-dark);
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border);
-        overflow: hidden;
-    }
-    .qty-btn {
-        width: 34px; height: 34px;
-        background: transparent;
-        font-size: 18px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--ink-light);
-        transition: background 0.12s;
-    }
-    .qty-btn:hover { background: var(--border); color: var(--ink); }
-    .qty-val {
-        width: 32px;
-        text-align: center;
-        font-weight: 700;
-        font-size: 14px;
-        color: var(--ink);
-        border-left: 1px solid var(--border);
-        border-right: 1px solid var(--border);
-        padding: 8px 0;
-    }
-
-    .invite-btn {
-        width: 34px; height: 34px;
-        background: transparent;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius-sm);
-        color: var(--border);
-        transition: all 0.15s;
-        border: 1px solid transparent;
-    }
-    .invite-btn:hover { color: var(--gold); border-color: rgba(196,152,58,0.3); background: var(--gold-pale); }
-    .invite-btn.active { color: var(--gold); background: var(--gold-pale); border-color: rgba(196,152,58,0.4); }
-
-    .ticket-footer {
-        padding: 18px 20px 20px;
-        background: var(--warm-white);
-        border-top: 1px solid var(--border);
-        flex-shrink: 0;
-    }
-    .total-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 14px;
-    }
-    .total-label { font-size: 13px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px; }
-    .total-amount { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -1px; }
-
-    .checkout-btn {
-        width: 100%;
-        padding: 16px;
-        background: var(--terracotta-pale);
-        color: rgba(194,90,66,0.4);
-        font-size: 15px;
-        font-weight: 700;
-        border-radius: var(--radius-md);
-        letter-spacing: 0.3px;
-        transition: all 0.2s ease;
-    }
-    .checkout-btn:not(:disabled) {
-        background: var(--terracotta);
-        color: white;
-        box-shadow: 0 4px 16px rgba(194,90,66,0.3);
-    }
-    .checkout-btn:not(:disabled):hover {
-        background: var(--terracotta-light);
-        box-shadow: 0 6px 20px rgba(194,90,66,0.35);
-        transform: translateY(-1px);
-    }
-    .checkout-btn:not(:disabled):active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(194,90,66,0.25); }
-
-    /* ===================== MOBILE FAB ===================== */
-    #mobile-cart-fab {
-        display: none;
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 40px);
-        max-width: 380px;
-        background: var(--terracotta);
-        color: white;
-        padding: 14px 20px;
-        border-radius: var(--radius-xl);
-        box-shadow: 0 8px 28px rgba(194,90,66,0.38);
-        z-index: 30;
-        flex-direction: column;
-        gap: 3px;
-    }
-    .fab-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 16px; font-weight: 700; }
-    .fab-bottom { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.8); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #mobile-cart-fab .badge {
-        background: white;
-        color: var(--terracotta);
-        padding: 2px 9px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 800;
-    }
-
-    /* ===================== MODALS ===================== */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(26,23,20,0.45);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        padding: 16px;
-    }
-    .modal {
-        background: var(--warm-white);
-        border-radius: var(--radius-xl);
-        width: 100%;
-        max-width: 440px;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        box-shadow: var(--shadow-xl);
-        border: 1px solid var(--border-light);
-        animation: modalIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    @keyframes modalIn {
-        from { opacity: 0; transform: scale(0.94) translateY(8px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .modal-header {
-        padding: 20px 22px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid var(--border-light);
-        background: var(--cream);
-    }
-    .modal-header h3 {
-        font-family: var(--font-display);
-        font-size: 17px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-    .close-x {
-        background: var(--warm-white);
-        border: 1px solid var(--border);
-        width: 30px; height: 30px;
-        border-radius: var(--radius-sm);
-        color: var(--ink-muted);
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s;
-    }
-    .close-x:hover { background: var(--cream-dark); color: var(--ink); border-color: var(--ink-muted); }
-
-    .modal-body {
-        padding: 22px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        max-height: 70vh;
-        overflow-y: auto;
-    }
-    .modal-body::-webkit-scrollbar { width: 4px; }
-    .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    /* Pay modal components */
-    .order-summary-box {
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        background: var(--cream);
-    }
-    .lbl-title {
-        font-size: 10px;
-        color: var(--ink-muted);
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        font-weight: 700;
-        margin-bottom: 12px;
-    }
-    .pay-items-list { max-height: 100px; overflow-y: auto; margin-bottom: 10px; }
-    .item-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        color: var(--ink-light);
-        margin-bottom: 7px;
-        font-weight: 500;
-    }
-    .item-qty { color: var(--ink-muted); margin-left: 6px; font-size: 12px; }
-    .summary-total {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 12px;
-        border-top: 1px solid var(--border);
-        padding-top: 14px;
-        align-items: baseline;
-    }
-    .summary-total span:first-child { font-size: 13px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.8px; }
-    .summary-total span:last-child { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--terracotta); }
-
-    .checkout-input {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: var(--radius-sm);
-        border: 1.5px solid var(--border);
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--ink);
-        background: var(--cream);
-        appearance: none;
-        -webkit-appearance: none;
-        transition: border-color 0.15s;
-    }
-    .checkout-input:focus { border-color: var(--terracotta); background: white; }
-
-    .input-section { display: flex; flex-direction: column; gap: 8px; }
-    .input-group { position: relative; }
-    .input-group .currency {
-        position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-        font-size: 18px; font-weight: 600; color: var(--ink-muted);
-    }
-    .input-group input {
-        width: 100%;
-        padding: 14px 14px 14px 36px;
-        font-size: 26px;
-        font-weight: 700;
-        font-family: var(--font-display);
-        border: 2px solid var(--terracotta);
-        border-radius: var(--radius-sm);
-        color: var(--ink);
-        background: white;
-        letter-spacing: -0.5px;
-        transition: box-shadow 0.15s;
-    }
-    .input-group input:focus { box-shadow: 0 0 0 3px rgba(194,90,66,0.1); }
-    .input-group input::placeholder { color: var(--border); }
-
-    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
-    .quick-btn {
-        padding: 11px 6px;
-        background: var(--warm-white);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        font-weight: 600;
-        font-size: 13px;
-        color: var(--ink-light);
-        transition: all 0.15s;
-    }
-    .quick-btn:hover { border-color: var(--terracotta); color: var(--terracotta); background: var(--terracotta-pale); }
-
-    .change-card {
-        background: var(--sage-pale);
-        padding: 14px 18px;
-        border-radius: var(--radius-sm);
-        border: 1px solid #c8dfd4;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .change-card .lbl { color: var(--sage); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .change-card .val { color: var(--sage); font-weight: 800; font-family: var(--font-display); font-size: 22px; letter-spacing: -0.5px; }
-
-    .modal-footer {
-        padding: 0 22px 22px;
-        display: flex;
-        gap: 10px;
-    }
-    .btn-cancel {
-        flex: 1;
-        padding: 13px;
-        background: var(--cream-dark);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-md);
-        font-weight: 600;
-        color: var(--ink-light);
-        font-size: 14px;
-        transition: all 0.15s;
-    }
-    .btn-cancel:hover { background: var(--border); color: var(--ink); }
-    .btn-confirm {
-        flex: 1.8;
-        padding: 13px;
-        background: var(--sage);
-        color: white;
-        border-radius: var(--radius-md);
-        font-weight: 700;
-        font-size: 14px;
-        box-shadow: 0 4px 14px rgba(90,122,106,0.25);
-        transition: all 0.15s;
-    }
-    .btn-confirm:not(:disabled):hover { background: var(--sage-light); box-shadow: 0 6px 18px rgba(90,122,106,0.3); }
-    .btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-    /* Form groups */
-    .form-group { display: flex; flex-direction: column; gap: 7px; margin-bottom: 6px; }
-    .form-group label { font-weight: 700; color: var(--ink-light); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; }
-    .form-group input, .form-group select {
-        padding: 12px 14px;
-        font-size: 14px;
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        background: var(--cream);
-        font-weight: 500;
-        color: var(--ink);
-        appearance: none;
-        -webkit-appearance: none;
-        transition: border-color 0.15s, background 0.15s;
-    }
-    .form-group input:focus, .form-group select:focus { border-color: var(--terracotta); background: white; }
-
-    /* Ticket viewer */
-    #ticket-viewer-content {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 13px;
-        line-height: 1.5;
-        color: var(--ink);
-        background: var(--cream);
-        padding: 18px;
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--border);
-        white-space: pre-wrap;
-    }
-
-    /* ===================== ADMIN VIEW ===================== */
-    #admin-view {
-        flex-direction: column;
-        padding: 28px 32px;
-        overflow-y: auto;
-        background: var(--cream);
-        gap: 36px;
-    }
-    #admin-view::-webkit-scrollbar { width: 4px; }
-    #admin-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-    .admin-section { display: flex; flex-direction: column; gap: 16px; }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; }
-    .admin-header h2 {
-        font-family: var(--font-display);
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--ink);
-    }
-
-    .btn-primary {
-        background: var(--ink);
-        color: white;
-        padding: 10px 18px;
-        border-radius: var(--radius-sm);
-        font-weight: 600;
-        font-size: 13px;
-        letter-spacing: 0.2px;
-        transition: all 0.15s;
-        box-shadow: var(--shadow-sm);
-    }
-    .btn-primary:hover { background: var(--ink-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-
-    .filter-bar {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        background: var(--warm-white);
-        padding: 14px 18px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-sm);
-        flex-wrap: wrap;
-    }
-    .filter-bar select, .filter-bar input[type="date"], .filter-bar input[type="month"], .filter-bar input[type="number"] {
-        padding: 9px 12px;
-        border-radius: var(--radius-sm);
-        border: 1.5px solid var(--border);
-        outline: none;
-        font-weight: 600;
-        font-size: 13px;
-        color: var(--ink);
-        background: var(--cream);
-        font-family: var(--font-body);
-        appearance: none;
-        -webkit-appearance: none;
-        transition: border-color 0.15s;
-    }
-    .filter-bar select:focus, .filter-bar input:focus { border-color: var(--terracotta); }
-    .filter-sep { color: var(--ink-muted); font-weight: 600; font-size: 13px; }
-    .filter-total { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-muted); }
-    .filter-total-val { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--terracotta); letter-spacing: -0.5px; }
-
-    .table-container {
-        background: var(--warm-white);
-        border-radius: var(--radius-md);
-        overflow: hidden;
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-sm);
-    }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th {
-        background: var(--cream);
-        padding: 12px 18px;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 10px;
-        color: var(--ink-muted);
-        letter-spacing: 1px;
-        border-bottom: 1px solid var(--border);
-    }
-    td {
-        padding: 14px 18px;
-        border-bottom: 1px solid var(--border-light);
-        font-size: 13px;
-        color: var(--ink-light);
-        font-weight: 500;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: var(--cream); }
-    td strong { color: var(--ink); font-weight: 700; }
-    .tbl-btn-edit { color: var(--terracotta); background: none; font-weight: 700; font-size: 12px; margin-right: 8px; padding: 4px 8px; border-radius: 4px; transition: background 0.12s; }
-    .tbl-btn-edit:hover { background: var(--terracotta-pale); }
-    .tbl-btn-del { color: #9b1c1c; background: none; font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 4px; transition: background 0.12s; }
-    .tbl-btn-del:hover { background: #fef2f2; }
-
-    /* ===================== Z MODAL ===================== */
-    #modal-z .modal { max-width: 480px; }
-    .z-modal-header {
-        background: var(--ink);
-        padding: 26px 24px 22px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    .z-title-block { display: flex; flex-direction: column; gap: 3px; }
-    .z-big-letter {
-        font-size: 48px;
-        font-weight: 900;
-        font-style: italic;
-        font-family: var(--font-display);
-        background: linear-gradient(135deg, #c4983a 0%, #e8c068 50%, #f5d689 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        line-height: 1;
-        display: inline-block;
-    }
-    .z-modal-header h3 { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 4px; font-family: var(--font-body); }
-    .z-modal-header .close-x { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.6); }
-    .z-modal-header .close-x:hover { background: rgba(255,255,255,0.15); color: white; }
-    .z-date-badge { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 500; margin-top: 2px; }
-
-    .z-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .z-stat-card {
-        background: var(--cream);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 14px 16px;
-        display: flex; flex-direction: column; gap: 3px;
-    }
-    .z-stat-card.highlight { background: var(--ink); border-color: var(--ink); }
-    .z-stat-card.highlight .z-stat-label { color: rgba(255,255,255,0.4); }
-    .z-stat-card.highlight .z-stat-val { color: white; }
-    .z-stat-label { font-size: 10px; color: var(--ink-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-    .z-stat-val { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.5px; }
-    .z-stat-sub { font-size: 11px; color: var(--ink-muted); font-weight: 400; }
-
-    .z-iva-section { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-    .z-iva-title { padding: 11px 16px; font-size: 10px; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); background: var(--cream); }
-    .z-iva-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--border-light); }
-    .z-iva-row:last-child { border-bottom: none; }
-    .z-iva-tag { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
-    .z-iva-tag.t10 { background: #dbeafe; color: #1e40af; }
-    .z-iva-tag.t21 { background: #ede9fe; color: #6d28d9; }
-    .z-iva-nums { display: flex; gap: 20px; }
-    .z-iva-num { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-    .z-iva-num span:first-child { font-size: 10px; color: var(--ink-muted); font-weight: 600; }
-    .z-iva-num span:last-child { font-size: 14px; font-weight: 700; color: var(--ink); font-family: var(--font-display); }
-
-    .z-total-bar {
-        background: var(--ink);
-        border-radius: var(--radius-md);
-        padding: 18px 22px;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .z-total-bar .lbl { color: rgba(255,255,255,0.5); font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
-    .z-total-bar .val { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: white; letter-spacing: -1px; }
-    .z-total-bar .val span { color: var(--gold); }
-
-    .z-invites-row {
-        display: flex; justify-content: space-between; align-items: center;
-        background: var(--gold-pale);
-        border: 1px solid rgba(196,152,58,0.25);
-        border-radius: var(--radius-sm);
-        padding: 12px 16px;
-    }
-    .z-invites-row .lbl { font-size: 12px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px; }
-    .z-invites-row .val { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: #92400e; }
-
-    /* ===================== RESPONSIVE ===================== */
-    @media screen and (max-width: 960px) {
-        #products-area { padding: 16px 16px; }
-        #products-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }
-        #ticket-panel { width: 340px; min-width: 280px; }
-    }
-
-    @media screen and (max-width: 780px) {
-        #app-root { flex-direction: column; }
-        #sidebar {
-            width: 100%; height: 68px;
-            flex-direction: row; justify-content: space-evenly;
-            padding: 0; order: 3; z-index: 60;
-            border-top: 1px solid rgba(255,255,255,0.06);
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        @media screen {
+            html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); color: var(--text-main); position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
         }
-        .brand-logo { display: none; }
-        .nav-btn { width: auto; height: 100%; flex: 1; border-radius: 0; font-size: 9px; gap: 4px; }
-        .nav-btn svg { width: 20px; height: 20px; }
-        .nav-btn.active::before { display: none; }
-        .nav-btn.active { background: rgba(255,255,255,0.1); }
-        .nav-btn-z { width: auto; height: 100%; flex: 1; border-radius: 0; margin: 0; }
-        .nav-btn-z .z-icon { font-size: 22px; }
-        .nav-btn-z .z-label { font-size: 8px; }
-        #main-container { width: 100%; order: 2; flex: 1; }
-        #mobile-header { display: flex; }
-        #products-area { padding: 14px; }
-        #products-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding-bottom: 90px; }
-        .area-header, .area-title, .area-subtitle { display: none; }
-        #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); z-index: 70; }
-        #ticket-panel.open { transform: translateX(0); }
-        .close-ticket-btn { display: flex !important; }
-        #mobile-cart-fab { display: flex; }
-        #admin-view { padding: 16px; padding-bottom: 80px; gap: 28px; }
-        .filter-bar { padding: 12px 14px; }
-        th, td { padding: 11px 14px; }
-        .table-container { overflow-x: auto; }
-        .z-stats-grid { grid-template-columns: 1fr 1fr; }
-        .modal-body { max-height: 65vh; }
-    }
 
-    @media screen and (max-width: 480px) {
-        #products-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-        .product-card { min-height: 115px; padding: 14px 12px; }
-        .product-name { font-size: 13px; }
-        .product-price { font-size: 16px; }
-    }
+        button { cursor: pointer; border: none; outline: none; transition: all 0.1s; }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        input, select { user-select: auto; }
 
-    /* ===================== PRINT ===================== */
-    #print-area { display: none; }
+        #app-root { display: flex; flex-direction: row; width: 100%; height: 100%; overflow: hidden; }
+        #sidebar { width: 90px; background: var(--sidebar-bg); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 50; flex-shrink: 0; }
+        .brand-logo { color: white; font-size: 10px; font-weight: 900; letter-spacing: 1px; text-align: center; margin-bottom: 10px; }
+        .nav-btn { width: 70px; height: 70px; border-radius: 16px; background: transparent; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; gap: 6px; }
+        .nav-btn svg { width: 28px; height: 28px; fill: currentColor; }
+        .nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
 
-    @media print {
-        @page { margin: 0; }
-        html, body { position: static !important; overflow: visible !important; height: auto !important; width: 100% !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-        #app-root, .modal-overlay { display: none !important; }
-        #print-area { display: block !important; position: relative !important; width: 100% !important; max-width: 320px !important; margin: 0 auto !important; padding: 2mm 4mm !important; color: black !important; font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; }
-        .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
-        .p-table td, .p-table th { padding: 2px 0 !important; vertical-align: top !important; overflow: hidden !important; white-space: nowrap !important; }
-        .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
-    }
-</style>
-```
+        .nav-btn-z {
+            width: 70px; height: 70px; border-radius: 16px; background: transparent;
+            color: #94a3b8; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: 600; gap: 4px;
+            position: relative; overflow: hidden; margin-top: auto; margin-bottom: 10px;
+        }
+        .nav-btn-z:hover { color: #f59e0b; }
+        .nav-btn-z .z-icon {
+            font-size: 32px; font-weight: 900; font-style: italic;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 6px rgba(245,158,11,0.5));
+            line-height: 1;
+        }
+        .nav-btn-z .z-label { font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
 
+        #main-container { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; position: relative; }
+        #mobile-header { display: none; padding: 16px 24px; background: rgba(255,255,255,0.9); border-bottom: 1px solid var(--checkout-border); z-index: 20; align-items: center; justify-content: center; width: 100%; }
+        .mobile-brand { font-size: 18px; font-weight: 900; color: var(--text-main); letter-spacing: 1px;}
+        .view { flex: 1; display: none; height: 100%; overflow: hidden; width: 100%; }
+        .view.active { display: flex; }
+        #pos-view { flex-direction: row; width: 100%; }
+
+        #products-area { flex: 1; display: flex; flex-direction: column; padding: 25px; overflow: hidden; min-width: 0; }
+        .search-bar-container { margin-bottom: 15px; position: relative; flex-shrink: 0; }
+        .search-bar-container input { width: 100%; padding: 14px 20px 14px 45px; border-radius: 16px; border: 1px solid var(--border-glass); background: rgba(255,255,255,0.7); font-size: 16px; font-weight: 600; color: var(--text-main); outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 20px; height: 20px; }
+
+        /* MODIFICADO: Sistema de submenús */
+        #categories-bar { display: flex; gap: 12px; overflow: visible; padding-bottom: 20px; flex-shrink: 0; flex-wrap: wrap; z-index: 10; position: relative; }
+        .cat-btn { padding: 14px 24px; border-radius: 30px; background: rgba(255,255,255,0.6); color: var(--text-muted); font-weight: 700; font-size: 15px; white-space: nowrap; border: 1px solid var(--border-glass); }
+        .cat-btn.active { background: var(--checkout-rust); color: white; border-color: var(--checkout-rust); }
+
+        .dropdown-container { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none; position: absolute; top: calc(100% - 12px); left: 0;
+            background: white; min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000; border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--border-glass);
+        }
+        .dropdown-container:hover .dropdown-content,
+        .dropdown-container.active .dropdown-content { display: block; }
+        .dropdown-content button {
+            width: 100%; padding: 16px 20px; text-align: left;
+            background: transparent; border: none; font-size: 14px;
+            font-weight: 700; color: var(--text-muted);
+            border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s;
+        }
+        .dropdown-content button:last-child { border-bottom: none; }
+        .dropdown-content button:hover { background: #f8fafc; color: var(--checkout-rust); padding-left: 25px; }
+
+        #products-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; overflow-y: auto; align-content: start; padding-bottom: 100px; }
+        .product-card { background: rgba(255,255,255,0.8); border-radius: 22px; padding: 20px; height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all 0.2s ease; }
+
+        /* --- ESTILOS SALÓN VS TERRAZA --- */
+        .product-card.is-salon {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
+            border-color: var(--border-glass);
+        }
+        .product-card.is-terraza {
+            background: linear-gradient(135deg, rgba(240,253,244,0.95) 0%, rgba(220,252,231,0.95) 100%);
+            border-color: #bbf7d0;
+        }
+        .product-card.is-terraza .product-name {
+            color: #166534; /* Un verde muy oscuro y elegante para el texto */
+        }
+        .product-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        }
+        /* -------------------------------- */
+
+        .product-card:active { transform: scale(0.95); background: white; }
+        .product-name { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
+        .product-price { font-size: 18px; color: var(--checkout-rust); font-weight: 900; }
+
+        #ticket-panel { width: 400px; min-width: 300px; background: white; border-left: 1px solid var(--checkout-border); display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.02); z-index: 40; transition: transform 0.3s ease; }
+        .ticket-header { padding: 25px; border-bottom: 1px solid var(--checkout-border); display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+        .ticket-header h2 { font-size: 20px; font-weight: 900; color: var(--text-main); margin: 0; }
+        .close-ticket-btn { display: none; font-size: 28px; color: var(--text-main); background: transparent; line-height: 1; }
+        .clear-btn { color: var(--danger); background: transparent; font-weight: 800; font-size: 13px; }
+        #ticket-items { flex: 1; overflow-y: auto; padding: 10px 25px; }
+        .ticket-item { display: flex; flex-direction: column; padding: 18px 0; border-bottom: 1px dashed #e2e8f0; gap: 12px; }
+        .ticket-item.is-invite { background: linear-gradient(90deg, rgba(245,158,11,0.04) 0%, transparent 100%); border-radius: 8px; padding: 12px 8px; margin: 0 -8px; border-bottom: 1px dashed #fde68a; }
+        .item-info { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .item-name-wrap { display: flex; align-items: center; gap: 6px; }
+        .invite-badge { font-size: 10px; font-weight: 800; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.5px; white-space: nowrap; }
+        .item-controls { display: flex; justify-content: space-between; align-items: center; }
+        .qty-controls { display: flex; align-items: center; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .qty-btn { width: 40px; height: 40px; background: transparent; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--text-main); }
+        .qty-val { width: 36px; text-align: center; font-weight: 800; font-size: 16px; }
+
+        .invite-btn {
+            width: 40px; height: 40px; background: transparent; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; transition: all 0.15s;
+            color: #d1d5db;
+        }
+        .invite-btn.active { color: #f59e0b; text-shadow: 0 0 8px rgba(245,158,11,0.6); transform: scale(1.1); }
+        .invite-btn:active { transform: scale(0.9) !important; }
+
+        .item-total { font-size: 16px; font-weight: 900; color: var(--text-muted); }
+        .item-total.free { color: #f59e0b; }
+        .ticket-footer { padding: 25px; background: white; border-top: 1px solid var(--checkout-border); }
+        .total-row { display: flex; justify-content: space-between; font-size: 26px; font-weight: 900; margin-bottom: 20px; color: var(--text-main); }
+        .checkout-btn { width: 100%; padding: 22px; background: #eac4ba; color: white; font-size: 20px; font-weight: 800; border-radius: 12px; transition: 0.2s; }
+        .checkout-btn:not(:disabled) { background: var(--checkout-rust); }
+
+        #mobile-cart-fab { display: none; position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 400px; background: var(--checkout-rust); color: white; padding: 14px 24px; border-radius: 20px; box-shadow: 0 10px 25px rgba(194, 90, 66, 0.4); z-index: 30; flex-direction: column; text-align: left; gap: 4px; }
+        .fab-top { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 18px; font-weight: 800; }
+        .fab-bottom { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.85); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #mobile-cart-fab .badge { background: white; color: var(--checkout-rust); padding: 2px 8px; border-radius: 20px; font-size: 14px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 15px; }
+        .modal { background: #ffffff; border-radius: var(--radius-lg-modal); width: 100%; max-width: 420px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-header { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--checkout-border); }
+        .modal-header h3 { font-size: 18px; font-weight: 700; color: #111; }
+        .close-x { background: white; border: 1px solid var(--checkout-border); width: 32px; height: 32px; border-radius: 8px; color: #888; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; max-height: 70vh; overflow-y: auto;}
+        
+        .order-summary-box { border: 1px solid var(--checkout-border); border-radius: 8px; padding: 16px; background: #ffffff; }
+        .lbl-title { font-size: 11px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; }
+        .pay-items-list { max-height: 100px; overflow-y: auto; margin-bottom: 10px; }
+        .item-row { display: flex; justify-content: space-between; font-size: 14px; color: #374151; margin-bottom: 8px; }
+        .item-qty { color: #9ca3af; margin-left: 8px; font-size: 13px; font-family: monospace;}
+        .summary-total { display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px solid var(--checkout-border); padding-top: 16px; font-size: 22px; font-weight: 800; align-items: center;}
+        .summary-total span:first-child { color: #111; font-size: 18px;}
+        .summary-total span:last-child { color: var(--checkout-rust); }
+        
+        .checkout-input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--checkout-border); font-size: 15px; font-weight: 600; color: #1f2937; background: #f9fafb; outline: none; appearance: none; -webkit-appearance: none; }
+        .input-section { display: flex; flex-direction: column; gap: 8px; }
+        .input-group { position: relative; }
+        .input-group .currency { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 600; color: #9ca3af; }
+        .input-group input { width: 100%; padding: 16px 16px 16px 40px; font-size: 26px; font-weight: 700; border: 2px solid var(--checkout-rust); border-radius: 8px; outline: none; color: #1f2937; letter-spacing: -0.5px; }
+        .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px;}
+        .quick-btn { padding: 12px 6px; background: white; border: 1px solid var(--checkout-border); border-radius: 6px; font-weight: 600; font-size: 14px; color: #4b5563; }
+        .change-card { background: var(--checkout-green-bg); padding: 16px 20px; border-radius: 8px; border: 1px solid #d1e5d9; display: flex; justify-content: space-between; align-items: center; }
+        .change-card .lbl { color: var(--checkout-green-text); font-weight: 600; font-size: 14px; }
+        .change-card .val { color: var(--checkout-green-text); font-weight: 800; font-size: 24px; letter-spacing: -1px;}
+        .modal-footer { padding: 0 24px 24px 24px; display: flex; gap: 12px; }
+        .btn-cancel { flex: 1; padding: 14px; background: white; border: 1px solid var(--checkout-border); border-radius: 8px; font-weight: 600; color: #4b5563; font-size: 15px; }
+        .btn-confirm { flex: 1.8; padding: 14px; background: var(--checkout-btn-green); color: white; border-radius: 8px; font-weight: 700; font-size: 15px; border: none;}
+        .btn-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;}
+        .form-group label { font-weight: 700; color: var(--text-main); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .form-group input, .form-group select { padding: 14px; font-size: 15px; border: 1px solid var(--checkout-border); border-radius: 8px; background: #f9fafb; font-weight: 600; color: #1f2937; outline: none; appearance: none; -webkit-appearance: none;}
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; }
+
+        #ticket-viewer-content { font-family: 'Courier New', Courier, monospace; font-size: 14px; line-height: 1.4; color: #111; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px dashed var(--checkout-border); white-space: pre-wrap; }
+
+        #admin-view { flex-direction: column; padding: 32px; overflow-y: auto; background: transparent; gap: 40px;}
+        .admin-section { display: flex; flex-direction: column; gap: 20px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; }
+        .admin-header h2 { font-size: 24px; font-weight: 800; }
+        .btn-primary { background: #111; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+        .table-container { background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--checkout-border); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 16px 20px; border-bottom: 1px solid var(--checkout-border); font-size: 14px; color: var(--text-main); }
+        th { background: #f9fafb; font-weight: 800; text-transform: uppercase; font-size: 12px; color: var(--text-muted); }
+
+        #modal-z .modal { max-width: 480px; }
+        .z-modal-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 28px 28px 24px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .z-modal-header .z-title-block { display: flex; flex-direction: column; gap: 4px; }
+        .z-big-letter {
+            font-size: 52px; font-weight: 900; font-style: italic;
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(245,158,11,0.4));
+            line-height: 1; display: inline-block;
+        }
+        .z-modal-header h3 { font-size: 13px; font-weight: 700; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+        .z-modal-header .close-x { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; }
+        .z-date-badge { font-size: 12px; color: #64748b; font-weight: 600; margin-top: 2px; }
+
+        .z-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .z-stat-card { background: #f8fafc; border: 1px solid var(--checkout-border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+        .z-stat-card.highlight { background: #0f172a; border-color: #0f172a; }
+        .z-stat-card.highlight .z-stat-label { color: #64748b; }
+        .z-stat-card.highlight .z-stat-val { color: white; }
+        .z-stat-label { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .z-stat-val { font-size: 24px; font-weight: 900; color: var(--text-main); letter-spacing: -1px; }
+        .z-stat-sub { font-size: 12px; color: #94a3b8; font-weight: 500; }
+
+        .z-iva-section { background: #fafafa; border: 1px solid var(--checkout-border); border-radius: 12px; overflow: hidden; }
+        .z-iva-title { padding: 12px 16px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--checkout-border); background: white; }
+        .z-iva-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--checkout-border); }
+        .z-iva-row:last-child { border-bottom: none; }
+        .z-iva-tag { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+        .z-iva-tag.t10 { background: #dbeafe; color: #1d4ed8; }
+        .z-iva-tag.t21 { background: #ede9fe; color: #7c3aed; }
+        .z-iva-nums { display: flex; gap: 24px; }
+        .z-iva-num { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+        .z-iva-num span:first-child { font-size: 11px; color: #94a3b8; font-weight: 600; }
+        .z-iva-num span:last-child { font-size: 15px; font-weight: 800; color: var(--text-main); }
+
+        .z-total-bar { background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 12px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .z-total-bar .lbl { color: #94a3b8; font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .z-total-bar .val { font-size: 32px; font-weight: 900; color: white; letter-spacing: -1px; }
+        .z-total-bar .val span { color: #f59e0b; }
+
+        .z-invites-row { display: flex; justify-content: space-between; align-items: center; background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; }
+        .z-invites-row .lbl { font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 8px; }
+        .z-invites-row .val { font-size: 16px; font-weight: 900; color: #b45309; }
+
+        @media screen and (max-width: 900px) {
+            #app-root { flex-direction: column; width: 100%; height: 100%; }
+            #sidebar { width: 100%; height: 75px; flex-direction: row; justify-content: space-evenly; padding: 0; border-top: 1px solid rgba(255,255,255,0.1); border-right: none; order: 3; z-index: 60; }
+            .brand-logo { display: none; }
+            .nav-btn { width: auto; height: 100%; flex: 1; border-radius: 0; }
+            .nav-btn-z { width: auto; height: 100%; flex: 1; border-radius: 0; margin: 0; }
+            .nav-btn-z .z-icon { font-size: 26px; }
+            #main-container { width: 100%; order: 2; flex: 1; display: flex; flex-direction: column; }
+            #mobile-header { display: flex; width: 100%; }
+            #products-area { padding: 16px; width: 100%; }
+            #products-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding-bottom: 80px; width: 100%; }
+            #ticket-panel { position: fixed; top: 0; right: 0; width: 100%; height: 100%; transform: translateX(100%); z-index: 70; background: white; }
+            #ticket-panel.open { transform: translateX(0); }
+            .close-ticket-btn { display: block; }
+            #mobile-cart-fab { display: flex; }
+            #admin-view { padding: 16px; padding-bottom: 80px; width: 100%; }
+            .table-container { border-radius: 12px; overflow-x: auto; width: 100%; }
+            th, td { padding: 12px 16px; font-size: 14px; }
+            .z-stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        #print-area { display: none; }
+        
+        @media print {
+            @page { margin: 0; } 
+            html, body { position: static !important; overflow: visible !important; height: auto !important; width: 100% !important; background: white !important; margin: 0 !important; padding: 0 !important; }
+            #app-root, .modal-overlay { display: none !important; }
+            #print-area { display: block !important; position: relative !important; width: 100% !important; max-width: 320px !important; margin: 0 auto !important; padding: 2mm 4mm !important; color: black !important; font-family: 'Courier New', Courier, monospace !important; font-size: 12px !important; }
+            .p-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+            .p-table td, .p-table th { padding: 2px 0 !important; vertical-align: top !important; overflow: hidden !important; white-space: nowrap !important; }
+            .p-dashed { border-top: 1px dashed black !important; margin: 6px 0 !important; }
+        }
+    </style>
 </head>
 <body>
 
@@ -1070,7 +308,7 @@
             Ventas
         </button>
         <button class="nav-btn" data-view="admin-view">
-            <svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             Ajustes
         </button>
         <button class="nav-btn-z" onclick="window.pos.openCierreZ()">
@@ -1079,142 +317,113 @@
         </button>
     </nav>
 
-```
-<div id="main-container">
-    <div id="mobile-header">
-        <span class="mobile-brand">QUINTO<span>POS</span></span>
-        <div style="width:32px;"></div>
-    </div>
-
-    <div id="pos-view" class="view active">
-        <div id="products-area">
-            <div class="area-header">
-                <div>
-                    <div class="area-title">Carta</div>
-                    <div class="area-subtitle">Selecciona productos para añadir al pedido</div>
+    <div id="main-container">
+        <div id="mobile-header"><span class="mobile-brand">QUINTOPOS</span></div>
+        <div id="pos-view" class="view active">
+            <div id="products-area">
+                <div class="search-bar-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
                 </div>
-            </div>
-            <div class="search-bar-container">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="search-input" placeholder="Buscar producto..." autocomplete="off">
-            </div>
-            <div id="categories-bar"></div>
-            <div id="products-grid"></div>
-            <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
-                <div class="fab-top">
-                    <span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span>
-                    <span id="mobile-cart-total">0,00 €</span>
-                </div>
-                <div class="fab-bottom" id="mobile-cart-preview">Añade productos para empezar</div>
-            </button>
-        </div>
-
-        <div id="ticket-panel">
-            <div class="ticket-header">
-                <div class="ticket-header-left">
-                    <h2>Pedido actual</h2>
-                    <span class="ticket-count" id="ticket-item-count">Sin artículos</span>
-                </div>
-                <div class="ticket-header-right">
-                    <button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button>
-                    <button class="close-ticket-btn" style="display:flex;" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button>
-                </div>
-            </div>
-            <div id="ticket-items"></div>
-            <div class="ticket-footer">
-                <div class="total-row">
-                    <span class="total-label">Total</span>
-                    <span class="total-amount" id="ticket-total">0,00 €</span>
-                </div>
-                <button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">
-                    Cobrar
+                <div id="categories-bar"></div>
+                
+                <div id="products-grid"></div>
+                <button id="mobile-cart-fab" onclick="document.getElementById('ticket-panel').classList.add('open')">
+                    <div class="fab-top"><span style="display:flex; align-items:center; gap:8px;"><span class="badge" id="mobile-cart-count">0</span><span>Ver Pedido</span></span><span id="mobile-cart-total">0,00 €</span></div>
+                    <div class="fab-bottom" id="mobile-cart-preview">Añade productos para empezar</div>
                 </button>
             </div>
-        </div>
-    </div>
-
-    <div id="admin-view" class="view">
-        <div class="admin-section">
-            <div class="admin-header"><h2>Historial de tickets</h2></div>
-            <div class="filter-bar">
-                <select id="filter-type" onchange="window.pos.changeFilterType(this.value)">
-                    <option value="date-range">Días / Rango</option>
-                    <option value="month">Mes</option>
-                    <option value="year">Año</option>
-                    <option value="all">Todos</option>
-                </select>
-                <div id="filter-date-range-container" style="display:flex; gap:8px; align-items:center;">
-                    <input type="date" id="filter-date-start" onchange="window.pos.updateFilterValues()">
-                    <span class="filter-sep">→</span>
-                    <input type="date" id="filter-date-end" onchange="window.pos.updateFilterValues()">
+            
+            <div id="ticket-panel">
+                <div class="ticket-header">
+                    <h2>Pedido Actual</h2>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <button class="clear-btn" onclick="window.pos.clearCart()">Vaciar</button>
+                        <button class="close-ticket-btn" onclick="document.getElementById('ticket-panel').classList.remove('open')">&times;</button>
+                    </div>
                 </div>
-                <input type="month" id="filter-month" style="display:none;" onchange="window.pos.updateFilterValues()">
-                <input type="number" id="filter-year" placeholder="Año (Ej: 2024)" style="display:none; width:130px;" oninput="window.pos.updateFilterValues()">
-                <div class="filter-total">
-                    <span>Total:</span>
-                    <span class="filter-total-val" id="filter-total-sum">0,00 €</span>
+                <div id="ticket-items"></div>
+                <div class="ticket-footer">
+                    <div class="total-row"><span>Total</span><span id="ticket-total">0,00 €</span></div>
+                    <button class="checkout-btn" id="btn-open-pay" disabled onclick="window.pos.openPay()">Cobrar</button>
                 </div>
             </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Ticket</th><th>Fecha</th><th>Hora</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead>
-                    <tbody id="orders-list"></tbody>
-                </table>
-            </div>
         </div>
 
-        <div class="admin-section">
-            <div class="admin-header">
-                <h2>Gestión de productos</h2>
-                <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir producto</button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Nombre</th><th>Categoría</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead>
-                    <tbody id="admin-list"></tbody>
-                </table>
-            </div>
-        </div>
+        <div id="admin-view" class="view">
+            <div class="admin-section">
+                <div class="admin-header"><h2>Historial de Tickets</h2></div>
+                
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--checkout-border); flex-wrap: wrap;">
+                    <select id="filter-type" style="padding: 10px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none; font-weight: 600;" onchange="window.pos.changeFilterType(this.value)">
+                        <option value="date-range">Días / Rango</option>
+                        <option value="month">Mes</option>
+                        <option value="year">Año</option>
+                        <option value="all">Todos</option>
+                    </select>
+                    
+                    <div id="filter-date-range-container" style="display: flex; gap: 8px; align-items: center;">
+                        <input type="date" id="filter-date-start" style="padding: 10px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none;" onchange="window.pos.updateFilterValues()">
+                        <span style="color: var(--text-muted); font-weight: bold;">a</span>
+                        <input type="date" id="filter-date-end" style="padding: 10px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none;" onchange="window.pos.updateFilterValues()">
+                    </div>
 
-        <div class="admin-section">
-            <div class="admin-header">
-                <h2>Gestión de camareros</h2>
-                <button class="btn-primary" onclick="window.pos.addWaiter()">+ Añadir camarero</button>
+                    <input type="month" id="filter-month" style="padding: 10px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none; display: none;" onchange="window.pos.updateFilterValues()">
+                    <input type="number" id="filter-year" placeholder="Año (Ej: 2024)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none; display: none; width: 120px;" oninput="window.pos.updateFilterValues()">
+                    
+                    <div style="margin-left: auto; font-size: 16px; font-weight: 800; color: var(--text-main);">
+                        Total filtrado: <span id="filter-total-sum" style="color: var(--checkout-rust); font-size: 20px; margin-left: 5px;">0,00 €</span>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Ticket</th><th>Fecha</th><th>Hora</th><th>Mesa</th><th>Total</th><th>Acciones</th></tr></thead>
+                        <tbody id="orders-list"></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Nombre</th><th>Acciones</th></tr></thead>
-                    <tbody id="waiters-list"></tbody>
-                </table>
+
+            <div class="admin-section">
+                <div class="admin-header">
+                    <h2>Gestión de Productos</h2>
+                    <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>Categoría</th><th>IVA</th><th>Precio</th><th>Acciones</th></tr></thead>
+                        <tbody id="admin-list"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <div class="admin-header">
+                    <h2>Gestión de Camareros</h2>
+                    <button class="btn-primary" onclick="window.pos.addWaiter()">+ Añadir Camarero</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Nombre</th><th>Acciones</th></tr></thead>
+                        <tbody id="waiters-list"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
-```
-
-</div>
-
-<!-- MODAL PAGO -->
 
 <div class="modal-overlay" id="modal-pay">
     <div class="modal">
-        <div class="modal-header">
-            <h3>Pago en efectivo</h3>
-            <button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button>
-        </div>
+        <div class="modal-header"><h3>Pago en efectivo</h3><button class="close-x" onclick="document.getElementById('modal-pay').style.display='none'">×</button></div>
         <div class="modal-body">
-            <div class="order-summary-box">
-                <div class="lbl-title">Resumen del pedido</div>
-                <div class="pay-items-list" id="pay-items-list"></div>
-                <div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <div class="input-section" style="flex:2;">
-                    <div class="lbl-title">Atendido por</div>
+            <div class="order-summary-box"><div class="lbl-title">Resumen del pedido</div><div class="pay-items-list" id="pay-items-list"></div><div class="summary-total"><span>Total</span><span id="pay-total-val">0,00 €</span></div></div>
+            <div style="display: flex; gap: 12px; margin-top: -5px;">
+                <div class="input-section" style="flex: 2;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Atendido por</div>
                     <select id="waiter-select" class="checkout-input"></select>
                 </div>
-                <div class="input-section" style="flex:1;">
-                    <div class="lbl-title">Mesa</div>
+                <div class="input-section" style="flex: 1;">
+                    <div class="lbl-title" style="margin-bottom:4px;">Mesa</div>
                     <select id="table-select" class="checkout-input">
                         <option value="—">--</option>
                         <option value="1">1</option><option value="2">2</option><option value="3">3</option>
@@ -1224,34 +433,16 @@
                     </select>
                 </div>
             </div>
-            <div class="input-section">
-                <div class="lbl-title">Efectivo recibido</div>
-                <div class="input-group">
-                    <span class="currency">€</span>
-                    <input type="number" id="cash-input" step="0.01" placeholder="0.00">
-                </div>
-                <div class="quick-grid" id="quick-btns"></div>
-            </div>
-            <div class="change-card">
-                <span class="lbl">Cambio a devolver</span>
-                <span class="val" id="pay-change-val">0,00 €</span>
-            </div>
+            <div class="input-section"><div class="lbl-title" style="margin-bottom:0;">Efectivo recibido</div><div class="input-group"><span class="currency">€</span><input type="number" id="cash-input" step="0.01" placeholder="0.00"></div><div class="quick-grid" id="quick-btns"></div></div>
+            <div class="change-card"><span class="lbl">Cambio</span><span class="val" id="pay-change-val">0,00 €</span></div>
         </div>
-        <div class="modal-footer">
-            <button class="btn-cancel" onclick="document.getElementById('modal-pay').style.display='none'">Cancelar</button>
-            <button class="btn-confirm" id="btn-confirm-pay" disabled onclick="window.pos.finish()">✓ Confirmar e imprimir</button>
-        </div>
+        <div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('modal-pay').style.display='none'">Cancelar</button><button class="btn-confirm" id="btn-confirm-pay" disabled onclick="window.pos.finish()">✓ Confirmar e imprimir</button></div>
     </div>
 </div>
 
-<!-- MODAL PRODUCTO -->
-
 <div class="modal-overlay" id="product-modal">
-    <div class="modal" style="max-width:400px;">
-        <div class="modal-header">
-            <h3 id="product-modal-title">Añadir producto</h3>
-            <button class="close-x" onclick="window.pos.closeProductModal()">×</button>
-        </div>
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="product-modal-title">Añadir Producto</h3><button class="close-x" onclick="window.pos.closeProductModal()">×</button></div>
         <div class="modal-body" style="padding-bottom:0;">
             <input type="hidden" id="form-id">
             <div class="form-group"><label>Nombre</label><input type="text" id="form-name" autocomplete="off" placeholder="Ej. Café Solo"></div>
@@ -1270,44 +461,34 @@
             </div>
             <div class="form-group"><label>Precio con IVA incluido (€)</label><input type="number" id="form-price" step="0.01" min="0" placeholder="0.00"></div>
         </div>
-        <div class="modal-footer" style="padding-top:20px;">
-            <button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button>
-            <button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar cambios</button>
-        </div>
+        <div class="modal-footer" style="padding-top:20px;"><button class="btn-cancel" onclick="window.pos.closeProductModal()">Cancelar</button><button class="btn-confirm" onclick="window.pos.saveProduct()">Guardar</button></div>
     </div>
 </div>
 
-<!-- MODAL VISOR TICKET -->
-
 <div class="modal-overlay" id="viewer-modal">
-    <div class="modal" style="max-width:400px;">
-        <div class="modal-header">
-            <h3 id="viewer-modal-title">Ticket</h3>
-            <button class="close-x" onclick="document.getElementById('viewer-modal').style.display='none'">×</button>
-        </div>
+    <div class="modal" style="max-width: 400px;">
+        <div class="modal-header"><h3 id="viewer-modal-title">Ticket</h3><button class="close-x" onclick="document.getElementById('viewer-modal').style.display='none'">×</button></div>
         <div class="modal-body" style="padding-bottom:0;">
             <div id="ticket-viewer-content"></div>
         </div>
         <div class="modal-footer" style="padding-top:20px;">
-            <button class="btn-cancel" style="width:100%; flex:none;" onclick="document.getElementById('viewer-modal').style.display='none'">Cerrar</button>
+            <button class="btn-cancel" style="width: 100%; flex: none;" onclick="document.getElementById('viewer-modal').style.display='none'">Cerrar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL Z -->
-
 <div class="modal-overlay" id="modal-z">
-    <div class="modal" style="max-width:480px;">
+    <div class="modal" style="max-width: 480px;">
         <div class="z-modal-header">
             <div class="z-title-block">
                 <span class="z-big-letter">Z</span>
-                <h3>Cierre de caja</h3>
+                <h3>CIERRE DE CAJA</h3>
                 <div class="z-date-badge" id="z-date-badge"></div>
             </div>
             <button class="close-x" onclick="document.getElementById('modal-z').style.display='none'">×</button>
         </div>
-        <div class="modal-body" id="z-body" style="gap:14px;"></div>
-        <div class="modal-footer" style="padding-top:0;">
+        <div class="modal-body" id="z-body" style="gap: 14px;"></div>
+        <div class="modal-footer" style="padding-top: 0;">
             <button class="btn-cancel" style="width:100%; flex:none;" onclick="document.getElementById('modal-z').style.display='none'">Cerrar</button>
         </div>
     </div>
@@ -1334,29 +515,37 @@ class POS {
         this.cart = [];
         this.waiters = [];
         this.orders = [];
+        // Se inicializa en "Todos"
         this.activeCat = 'Todos';
         this.searchTerm = '';
         this.nextTicketNumber = 76283;
+        
+        // Estado del filtro
         this.filterType = 'date-range';
         this.filterStartDate = '';
         this.filterEndDate = '';
         this.filterValue = '';
+
         this.init();
     }
 
     async init() {
         this.bindEvents();
+        
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
+        
         const todayStr = `${yyyy}-${mm}-${dd}`;
         document.getElementById('filter-date-start').value = todayStr;
         document.getElementById('filter-date-end').value = todayStr;
         document.getElementById('filter-month').value = `${yyyy}-${mm}`;
         document.getElementById('filter-year').value = `${yyyy}`;
+        
         this.filterStartDate = todayStr;
         this.filterEndDate = todayStr;
+
         await this.loadData();
     }
 
@@ -1414,47 +603,49 @@ class POS {
     }
 
     render() {
+        // Lógica visual para saber qué botón padre destacar
         const isSalon = this.activeCat === 'MENÚS' || this.activeCat === 'BEBIDAS';
         const isTerraza = this.activeCat === 'MENÚS TERRAZA' || this.activeCat === 'BEBIDAS TERRAZA';
-
+        
+        // Estructura de submenús generada
         document.getElementById('categories-bar').innerHTML = `
             <button class="cat-btn ${this.activeCat === 'Todos' ? 'active' : ''}" onclick="window.pos.setCat('Todos')">Todos</button>
+            
             <div class="dropdown-container">
-                <button class="cat-btn ${isSalon ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">Salón ▾</button>
+                <button class="cat-btn ${isSalon ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">SALÓN ▾</button>
                 <div class="dropdown-content">
-                    <button onclick="window.pos.setCat('MENÚS')">Menús (10% IVA)</button>
-                    <button onclick="window.pos.setCat('BEBIDAS')">Bebidas (21% IVA)</button>
+                    <button onclick="window.pos.setCat('MENÚS')">MENÚS (10% IVA)</button>
+                    <button onclick="window.pos.setCat('BEBIDAS')">BEBIDAS (21% IVA)</button>
                 </div>
             </div>
+            
             <div class="dropdown-container">
-                <button class="cat-btn ${isTerraza ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">Terraza ▾</button>
+                <button class="cat-btn ${isTerraza ? 'active' : ''}" onclick="this.parentElement.classList.toggle('active')">TERRAZA ▾</button>
                 <div class="dropdown-content">
-                    <button onclick="window.pos.setCat('MENÚS TERRAZA')">Menús Terraza (10% IVA)</button>
-                    <button onclick="window.pos.setCat('BEBIDAS TERRAZA')">Bebidas Terraza (21% IVA)</button>
+                    <button onclick="window.pos.setCat('MENÚS TERRAZA')">MENÚS TERRAZA (10% IVA)</button>
+                    <button onclick="window.pos.setCat('BEBIDAS TERRAZA')">BEBIDAS TERRAZA (21% IVA)</button>
                 </div>
             </div>
         `;
 
         let filtered = this.activeCat === 'Todos' ? this.products : this.products.filter(p => p.category === this.activeCat);
-        if (this.searchTerm) filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm));
+        if (this.searchTerm) { filtered = filtered.filter(p => p.name.toLowerCase().includes(this.searchTerm)); }
 
-        document.getElementById('products-grid').innerHTML = filtered.map(p => {
-            const isTe = p.category && p.category.includes('TERRAZA');
-            const cardClass = isTe ? 'is-terraza' : 'is-salon';
-            const icon = isTe ? '🌿' : '☕';
-            const isBev = p.category && p.category.includes('BEBIDAS');
-            const ivaLabel = isBev ? '21%' : '10%';
+                document.getElementById('products-grid').innerHTML = filtered.map(p => {
+            // Detectamos si es Terraza leyendo la categoría
+            const isTerraza = p.category && p.category.includes('TERRAZA');
+            const cardClass = isTerraza ? 'is-terraza' : 'is-salon';
+            const icon = isTerraza ? '🌿' : '🛋️';
+
             return `
             <div class="product-card ${cardClass}" onclick="window.pos.addToCart('${p.id}')">
-                <div class="product-card-top">
-                    <span class="product-icon">${icon}</span>
-                    <span class="product-iva-badge">${ivaLabel}</span>
-                </div>
+                <div class="product-icon">${icon}</div>
                 <div class="product-name">${p.name}</div>
                 <div class="product-price">${p.price.toFixed(2).replace('.', ',')} €</div>
             </div>
             `;
         }).join('');
+
 
         this.updateCartUI();
     }
@@ -1480,7 +671,10 @@ class POS {
 
     toggleInvite(id) {
         const item = this.cart.find(i => i.id === id);
-        if (item) { item.invited = !item.invited; this.updateCartUI(); }
+        if (item) {
+            item.invited = !item.invited;
+            this.updateCartUI();
+        }
     }
 
     clearCart() { this.cart = []; this.updateCartUI(); document.getElementById('ticket-panel').classList.remove('open'); }
@@ -1488,14 +682,15 @@ class POS {
     updateCartUI() {
         const container = document.getElementById('ticket-items');
         container.innerHTML = this.cart.map(i => {
-            const lineTotal = i.invited ? 0 : i.price * i.qty;
+            const effectivePrice = i.invited ? 0 : i.price;
+            const lineTotal = effectivePrice * i.qty;
             return `
             <div class="ticket-item ${i.invited ? 'is-invite' : ''}">
                 <div class="item-info">
-                    <div class="item-name-wrap">
-                        <span class="item-name">${i.name}</span>
-                        ${i.invited ? '<span class="invite-badge">★ Invitación</span>' : ''}
-                    </div>
+                    <span class="item-name-wrap">
+                        <span>${i.name}</span>
+                        ${i.invited ? '<span class="invite-badge">★ INVITACIÓN</span>' : ''}
+                    </span>
                     <span class="item-total ${i.invited ? 'free' : ''}">${i.invited ? '0,00 €' : (i.price * i.qty).toFixed(2).replace('.', ',') + ' €'}</span>
                 </div>
                 <div class="item-controls">
@@ -1508,7 +703,8 @@ class POS {
                         ${i.invited ? '★' : '☆'}
                     </button>
                 </div>
-            </div>`;
+            </div>
+            `;
         }).join('');
 
         const total = this.cart.reduce((s, i) => s + (i.invited ? 0 : i.price * i.qty), 0);
@@ -1519,12 +715,11 @@ class POS {
         document.getElementById('mobile-cart-total').textContent = totStr;
         document.getElementById('mobile-cart-count').textContent = count;
 
-        const countEl = document.getElementById('ticket-item-count');
-        if (countEl) countEl.textContent = count > 0 ? `${count} artículo${count !== 1 ? 's' : ''}` : 'Sin artículos';
-
-        document.getElementById('mobile-cart-preview').textContent = this.cart.length > 0
-            ? this.cart.map(i => `${i.qty}× ${i.name}${i.invited ? ' ★' : ''}`).join(', ')
-            : 'Añade productos para empezar';
+        if (this.cart.length > 0) {
+            document.getElementById('mobile-cart-preview').textContent = this.cart.map(i => `${i.qty}x ${i.name}${i.invited ? ' ★' : ''}`).join(', ');
+        } else {
+            document.getElementById('mobile-cart-preview').textContent = 'Añade productos para empezar';
+        }
 
         document.getElementById('btn-open-pay').disabled = this.cart.length === 0;
         if (this.cart.length === 0) document.getElementById('ticket-panel').classList.remove('open');
@@ -1535,13 +730,15 @@ class POS {
         document.getElementById('pay-total-val').textContent = total.toFixed(2).replace('.', ',') + ' €';
         document.getElementById('pay-items-list').innerHTML = this.cart.map(i => `
             <div class="item-row">
-                <span>${i.name.substring(0, 24)}${i.invited ? ' ★' : ''}<span class="item-qty">×${i.qty}</span></span>
+                <span>${i.name.substring(0, 22)}${i.invited ? ' ★' : ''} <span class="item-qty">x${i.qty}</span></span>
                 <span>${i.invited ? '0,00 €' : (i.price * i.qty).toFixed(2).replace('.', ',') + ' €'}</span>
-            </div>`).join('');
+            </div>
+        `).join('');
 
         document.getElementById('cash-input').value = '';
         document.getElementById('pay-change-val').textContent = '0,00 €';
         document.getElementById('btn-confirm-pay').disabled = total > 0;
+
         document.getElementById('waiter-select').innerHTML = this.waiters.map(w => `<option value="${w.name}">${w.name.toUpperCase()}</option>`).join('');
         document.getElementById('table-select').value = '—';
 
@@ -1590,6 +787,7 @@ class POS {
         this.cart.forEach(i => {
             if (i.invited) return;
             const lineTotal = i.price * i.qty;
+            // Calculo para detectar ambas variantes de Bebidas (Salón o Terraza)
             const ivaRate = (i.category && i.category.includes('BEBIDAS')) ? 21 : 10;
             const baseImpLine = lineTotal / (1 + (ivaRate / 100));
             if (ivaRate === 21) { bases[21] += baseImpLine; cuotas[21] += (lineTotal - baseImpLine); }
@@ -1614,46 +812,90 @@ class POS {
         db.collection('orders').add(orderData);
 
         let h = `
-        <div style="text-align:center; margin-bottom:12px; line-height:1.2;">
-            <div style="font-size:18px; font-weight:bold; letter-spacing:1px; margin-bottom:4px;">EL QUINTO SABOR</div>
-            Avda. Quitapesares, 17<br>28670 Villaviciosa Madrid<br>CIF: B87650776
+        <div style="text-align: center; margin-bottom: 12px; line-height: 1.2;">
+            <div style="font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px;">EL QUINTO SABOR</div>
+            Avda. Quitapesares, 17<br>
+            28670 Villaviciosa Madrid<br>
+            CIF: B87650776
         </div>
-        <table class="p-table" style="margin-bottom:8px;">
+        <table class="p-table" style="margin-bottom: 8px;">
             <tr>
-                <td style="text-align:left; width:50%;">FACT.SIMPLIFICADA<br>T001/${currentTicketNumber}</td>
-                <td style="text-align:right; width:50%;">FECHA ${dateStr}<br>SALA 3 MESA ${tableNumber}</td>
+                <td style="text-align: left; width: 50%;">FACT.SIMPLIFICADA<br>T001/${currentTicketNumber}</td>
+                <td style="text-align: right; width: 50%;">FECHA ${dateStr}<br>SALA 3 MESA ${tableNumber}</td>
             </tr>
         </table>
         <table class="p-table">
-            <tr style="border-bottom:1px dashed black;">
-                <th style="text-align:left; width:12%; padding-bottom:4px; font-weight:normal;">UDS</th>
-                <th style="text-align:left; width:45%; padding-bottom:4px; font-weight:normal;">DESCRIPCION</th>
-                <th style="text-align:right; width:18%; padding-bottom:4px; font-weight:normal;">PVP</th>
-                <th style="text-align:right; width:25%; padding-bottom:4px; font-weight:normal;">IMPORTE</th>
-            </tr>`;
+            <tr style="border-bottom: 1px dashed black;">
+                <th style="text-align: left; width: 12%; padding-bottom: 4px; font-weight: normal;">UDS</th>
+                <th style="text-align: left; width: 45%; padding-bottom: 4px; font-weight: normal;">DESCRIPCION</th>
+                <th style="text-align: right; width: 18%; padding-bottom: 4px; font-weight: normal;">PVP</th>
+                <th style="text-align: right; width: 25%; padding-bottom: 4px; font-weight: normal;">IMPORTE</th>
+            </tr>
+        `;
 
         this.cart.forEach(i => {
             if (i.invited) {
-                h += `<tr><td style="text-align:left; padding-top:4px;">${i.qty}</td><td style="text-align:left; padding-top:4px;">${i.name.toUpperCase().substring(0, 14)}<br><span style="font-size:10px;">** INVITACION **</span></td><td style="text-align:right; padding-top:4px;">${i.price.toFixed(2).replace('.', ',')}</td><td style="text-align:right; padding-top:4px;">0,00 €</td></tr>`;
+                h += `
+                <tr>
+                    <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                    <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 14)}<br><span style="font-size:10px;">** INVITACION **</span></td>
+                    <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right; padding-top: 4px;">0,00 €</td>
+                </tr>`;
             } else {
-                h += `<tr><td style="text-align:left; padding-top:4px;">${i.qty}</td><td style="text-align:left; padding-top:4px;">${i.name.toUpperCase().substring(0, 16)}</td><td style="text-align:right; padding-top:4px;">${i.price.toFixed(2).replace('.', ',')}</td><td style="text-align:right; padding-top:4px;">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</td></tr>`;
+                h += `
+                <tr>
+                    <td style="text-align: left; padding-top: 4px;">${i.qty}</td>
+                    <td style="text-align: left; padding-top: 4px;">${i.name.toUpperCase().substring(0, 16)}</td>
+                    <td style="text-align: right; padding-top: 4px;">${i.price.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: right; padding-top: 4px;">${(i.price * i.qty).toFixed(2).replace('.', ',')} €</td>
+                </tr>`;
             }
         });
 
-        h += `</table><div class="p-dashed"></div>
-        <table class="p-table" style="margin-bottom:12px;">
-            <tr><td style="width:55%; vertical-align:bottom;">
-                <table class="p-table">
-                    <tr><td style="text-align:left; width:40%; font-weight:bold;">BASE IMP</td><td style="text-align:center; width:20%; font-weight:bold;">IVA</td><td style="text-align:right; width:40%; font-weight:bold;">CUOTA</td></tr>`;
-        if (bases[10] > 0) h += `<tr><td style="text-align:left;">${bases[10].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">10%</td><td style="text-align:right;">${cuotas[10].toFixed(2).replace('.', ',')}</td></tr>`;
-        if (bases[21] > 0) h += `<tr><td style="text-align:left;">${bases[21].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">21%</td><td style="text-align:right;">${cuotas[21].toFixed(2).replace('.', ',')}</td></tr>`;
-        h += `</table></td><td style="width:45%; text-align:right; vertical-align:bottom;"><div style="font-size:14px; margin-bottom:2px;">TOTAL</div><div style="font-size:18px; font-weight:bold;">${total.toFixed(2).replace('.', ',')} €</div></td></tr></table>
-        <div class="p-dashed"></div>
-        <table class="p-table" style="margin-bottom:15px;">
-            <tr><td style="width:40%;"></td><td style="width:30%; text-align:right;">ENTREGADO</td><td style="width:30%; text-align:right;">CAMBIO</td></tr>
-            <tr><td style="text-align:right; padding-right:15px;">EFECTIVO</td><td style="text-align:right;">${cash.toFixed(2).replace('.', ',')}</td><td style="text-align:right;">${change.toFixed(2).replace('.', ',')} €</td></tr>
+        h += `
         </table>
-        <div style="text-align:center; line-height:1.2;">*** GRACIAS POR SU VISITA ***<br><div style="text-align:left; margin-top:5px;">ATENDIDO POR: ${waiterName}</div></div>`;
+        <div class="p-dashed"></div>
+        <table class="p-table" style="margin-bottom: 12px;">
+            <tr>
+                <td style="width: 55%; vertical-align: bottom;">
+                    <table class="p-table">
+                        <tr>
+                            <td style="text-align: left; width: 40%; font-weight: bold;">BASE IMP</td>
+                            <td style="text-align: center; width: 20%; font-weight: bold;">IVA</td>
+                            <td style="text-align: right; width: 40%; font-weight: bold;">CUOTA</td>
+                        </tr>
+        `;
+        if (bases[10] > 0) { h += `<tr><td style="text-align:left;">${bases[10].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">10%</td><td style="text-align:right;">${cuotas[10].toFixed(2).replace('.', ',')}</td></tr>`; }
+        if (bases[21] > 0) { h += `<tr><td style="text-align:left;">${bases[21].toFixed(2).replace('.', ',')}</td><td style="text-align:center;">21%</td><td style="text-align:right;">${cuotas[21].toFixed(2).replace('.', ',')}</td></tr>`; }
+
+        h += `
+                    </table>
+                </td>
+                <td style="width: 45%; text-align: right; vertical-align: bottom;">
+                    <div style="font-size: 14px; margin-bottom: 2px;">TOTAL</div>
+                    <div style="font-size: 18px; font-weight: bold;">${total.toFixed(2).replace('.', ',')} €</div>
+                </td>
+            </tr>
+        </table>
+        <div class="p-dashed"></div>
+        <table class="p-table" style="margin-bottom: 15px;">
+            <tr>
+                <td style="width: 40%;"></td>
+                <td style="width: 30%; text-align: right;">ENTREGADO</td>
+                <td style="width: 30%; text-align: right;">CAMBIO</td>
+            </tr>
+            <tr>
+                <td style="text-align: right; padding-right: 15px;">EFECTIVO</td>
+                <td style="text-align: right;">${cash.toFixed(2).replace('.', ',')}</td>
+                <td style="text-align: right;">${change.toFixed(2).replace('.', ',')} €</td>
+            </tr>
+        </table>
+        <div style="text-align: center; line-height: 1.2;">
+            *** GRACIAS POR SU VISITA ***<br>
+            <div style="text-align: left; margin-top: 5px;">ATENDIDO POR: ${waiterName}</div>
+        </div>
+        `;
 
         document.getElementById('print-area').innerHTML = h;
         document.getElementById('print-area').offsetHeight;
@@ -1669,12 +911,21 @@ class POS {
         document.getElementById('z-date-badge').textContent = today;
 
         const todayOrders = this.orders.filter(o => o.dateStr === today);
-        let totalVentas = 0, base10 = 0, cuota10 = 0, base21 = 0, cuota21 = 0, totalInvitaciones = 0, numInvitaciones = 0;
+
+        let totalVentas = 0;
+        let base10 = 0, cuota10 = 0;
+        let base21 = 0, cuota21 = 0;
+        let totalInvitaciones = 0;
+        let numInvitaciones = 0;
 
         todayOrders.forEach(o => {
             totalVentas += o.total;
             o.items.forEach(i => {
-                if (i.invited) { totalInvitaciones += i.originalPrice * i.qty; numInvitaciones += i.qty; return; }
+                if (i.invited) {
+                    totalInvitaciones += i.originalPrice * i.qty;
+                    numInvitaciones += i.qty;
+                    return;
+                }
                 const lineTotal = i.price * i.qty;
                 const ivaRate = i.iva || ((i.category && i.category.includes('BEBIDAS')) ? 21 : 10);
                 const base = lineTotal / (1 + ivaRate / 100);
@@ -1684,7 +935,8 @@ class POS {
             });
         });
 
-        document.getElementById('z-body').innerHTML = `
+        const body = document.getElementById('z-body');
+        body.innerHTML = `
             <div class="z-stats-grid">
                 <div class="z-stat-card">
                     <div class="z-stat-label">Tickets hoy</div>
@@ -1697,23 +949,52 @@ class POS {
                     <div class="z-stat-sub">por cliente</div>
                 </div>
             </div>
+
             <div class="z-iva-section">
                 <div class="z-iva-title">Desglose por IVA</div>
-                ${base10 > 0 ? `<div class="z-iva-row"><span class="z-iva-tag t10">10% IVA</span><div class="z-iva-nums"><div class="z-iva-num"><span>Base</span><span>${base10.toFixed(2).replace('.', ',')} €</span></div><div class="z-iva-num"><span>Cuota</span><span>${cuota10.toFixed(2).replace('.', ',')} €</span></div><div class="z-iva-num"><span>Total</span><span>${(base10+cuota10).toFixed(2).replace('.', ',')} €</span></div></div></div>` : ''}
-                ${base21 > 0 ? `<div class="z-iva-row"><span class="z-iva-tag t21">21% IVA</span><div class="z-iva-nums"><div class="z-iva-num"><span>Base</span><span>${base21.toFixed(2).replace('.', ',')} €</span></div><div class="z-iva-num"><span>Cuota</span><span>${cuota21.toFixed(2).replace('.', ',')} €</span></div><div class="z-iva-num"><span>Total</span><span>${(base21+cuota21).toFixed(2).replace('.', ',')} €</span></div></div></div>` : ''}
-                ${base10 === 0 && base21 === 0 ? `<div class="z-iva-row" style="justify-content:center; color:var(--ink-muted); font-size:13px; font-weight:500;">Sin ventas registradas hoy</div>` : ''}
+                ${base10 > 0 ? `
+                <div class="z-iva-row">
+                    <span class="z-iva-tag t10">10% IVA</span>
+                    <div class="z-iva-nums">
+                        <div class="z-iva-num"><span>Base</span><span>${base10.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Cuota</span><span>${cuota10.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Total</span><span>${(base10 + cuota10).toFixed(2).replace('.', ',')} €</span></div>
+                    </div>
+                </div>` : ''}
+                ${base21 > 0 ? `
+                <div class="z-iva-row">
+                    <span class="z-iva-tag t21">21% IVA</span>
+                    <div class="z-iva-nums">
+                        <div class="z-iva-num"><span>Base</span><span>${base21.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Cuota</span><span>${cuota21.toFixed(2).replace('.', ',')} €</span></div>
+                        <div class="z-iva-num"><span>Total</span><span>${(base21 + cuota21).toFixed(2).replace('.', ',')} €</span></div>
+                    </div>
+                </div>` : ''}
+                ${base10 === 0 && base21 === 0 ? `<div class="z-iva-row" style="justify-content:center; color:#94a3b8; font-size:14px;">Sin ventas registradas hoy</div>` : ''}
             </div>
-            ${numInvitaciones > 0 ? `<div class="z-invites-row"><span class="lbl">★ Invitaciones (${numInvitaciones} uds)</span><span class="val">−${totalInvitaciones.toFixed(2).replace('.', ',')} €</span></div>` : ''}
-            <div class="z-total-bar"><span class="lbl">Total cobrado</span><span class="val"><span>${totalVentas.toFixed(2).replace('.', ',')}</span> €</span></div>
+
+            ${numInvitaciones > 0 ? `
+            <div class="z-invites-row">
+                <span class="lbl">★ Invitaciones (${numInvitaciones} uds)</span>
+                <span class="val">−${totalInvitaciones.toFixed(2).replace('.', ',')} €</span>
+            </div>` : ''}
+
+            <div class="z-total-bar">
+                <span class="lbl">Total cobrado</span>
+                <span class="val"><span>${totalVentas.toFixed(2).replace('.', ',')}</span> €</span>
+            </div>
         `;
+
         document.getElementById('modal-z').style.display = 'flex';
     }
 
     changeFilterType(type) {
         this.filterType = type;
+        
         document.getElementById('filter-date-range-container').style.display = type === 'date-range' ? 'flex' : 'none';
         document.getElementById('filter-month').style.display = type === 'month' ? 'block' : 'none';
         document.getElementById('filter-year').style.display = type === 'year' ? 'block' : 'none';
+        
         this.updateFilterValues();
     }
 
@@ -1733,12 +1014,16 @@ class POS {
 
     renderAdmin() {
         let filteredOrders = this.orders;
+        
         if (this.filterType && this.filterType !== 'all') {
             filteredOrders = this.orders.filter(o => {
                 const parts = o.dateStr.split('/');
                 if (parts.length !== 3) return false;
-                const oDay = parts[0], oMonth = parts[1], oYear = parts[2];
+                const oDay = parts[0];
+                const oMonth = parts[1];
+                const oYear = parts[2];
                 const orderDateStr = `${oYear}-${oMonth}-${oDay}`;
+
                 if (this.filterType === 'date-range') {
                     if (!this.filterStartDate && !this.filterEndDate) return true;
                     if (this.filterStartDate && orderDateStr < this.filterStartDate) return false;
@@ -1757,7 +1042,9 @@ class POS {
 
         const totalSum = filteredOrders.reduce((sum, o) => sum + o.total, 0);
         const sumEl = document.getElementById('filter-total-sum');
-        if (sumEl) sumEl.textContent = totalSum.toFixed(2).replace('.', ',') + ' €';
+        if (sumEl) {
+            sumEl.textContent = totalSum.toFixed(2).replace('.', ',') + ' €';
+        }
 
         document.getElementById('orders-list').innerHTML = filteredOrders.map(o => `
             <tr>
@@ -1767,21 +1054,23 @@ class POS {
                 <td>Mesa ${o.table}</td>
                 <td><strong>${o.total.toFixed(2).replace('.', ',')} €</strong></td>
                 <td>
-                    <button class="tbl-btn-edit" onclick="window.pos.viewOrder('${o.id}')">Ver</button>
-                    <button class="tbl-btn-del" onclick="window.pos.delOrder('${o.id}')">Borrar</button>
+                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:10px;" onclick="window.pos.viewOrder('${o.id}')">Ver</button>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delOrder('${o.id}')">Borrar</button>
                 </td>
-            </tr>`).join('');
+            </tr>
+        `).join('');
 
         document.getElementById('admin-list').innerHTML = this.products.map(p => {
             const ivaVisual = (p.category && p.category.includes('BEBIDAS')) ? 21 : 10;
-            return `<tr>
+            return `
+            <tr>
                 <td><strong>${p.name}</strong></td>
                 <td>${p.category}</td>
                 <td>${ivaVisual}%</td>
                 <td>${p.price.toFixed(2).replace('.', ',')} €</td>
                 <td>
-                    <button class="tbl-btn-edit" onclick="window.pos.openProductModal('${p.id}')">Editar</button>
-                    <button class="tbl-btn-del" onclick="window.pos.delP('${p.id}')">Eliminar</button>
+                    <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openProductModal('${p.id}')">Editar</button>
+                    <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delP('${p.id}')">Eliminar</button>
                 </td>
             </tr>`;
         }).join('');
@@ -1789,8 +1078,9 @@ class POS {
         document.getElementById('waiters-list').innerHTML = this.waiters.map(w => `
             <tr>
                 <td><strong>${w.name.toUpperCase()}</strong></td>
-                <td><button class="tbl-btn-del" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button></td>
-            </tr>`).join('');
+                <td><button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delWaiter('${w.id}')">Eliminar</button></td>
+            </tr>
+        `).join('');
     }
 
     viewOrder(id) {
@@ -1821,13 +1111,13 @@ class POS {
     openProductModal(id = null) {
         if (id) {
             const p = this.products.find(x => x.id === id);
-            document.getElementById('product-modal-title').textContent = 'Editar producto';
+            document.getElementById('product-modal-title').textContent = 'Editar Producto';
             document.getElementById('form-id').value = p.id;
             document.getElementById('form-name').value = p.name;
             document.getElementById('form-category').value = p.category || 'MENÚS';
             document.getElementById('form-price').value = p.price;
         } else {
-            document.getElementById('product-modal-title').textContent = 'Añadir producto';
+            document.getElementById('product-modal-title').textContent = 'Añadir Producto';
             document.getElementById('form-id').value = '';
             document.getElementById('form-name').value = '';
             document.getElementById('form-category').value = 'MENÚS';
@@ -1844,6 +1134,7 @@ class POS {
         const category = document.getElementById('form-category').value;
         const price = parseFloat(document.getElementById('form-price').value);
         const iva = category.includes('BEBIDAS') ? 21 : 10;
+        
         if (!name || isNaN(price) || price < 0) { alert("Por favor, introduce un nombre y precio válidos."); return; }
         const data = { name, category, price, iva };
         if (id) await db.collection('products').doc(id).update(data);
@@ -1864,6 +1155,5 @@ class POS {
 
 window.pos = new POS();
 </script>
-
 </body>
 </html>
