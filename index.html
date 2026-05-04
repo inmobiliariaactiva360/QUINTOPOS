@@ -375,7 +375,6 @@
                 </div>
             </div>
 
-            <!-- AQUÍ ESTÁ LA NUEVA SECCIÓN CON EL BUSCADOR DE PRODUCTOS -->
             <div class="admin-section">
                 <div class="admin-header" style="flex-wrap: wrap; gap: 15px;">
                     <h2>Gestión de Productos</h2>
@@ -633,13 +632,11 @@ class POS {
 
         document.getElementById('cash-input').addEventListener('input', () => this.updateChange());
         
-        // Buscador de vista de Ventas
         document.getElementById('search-input').addEventListener('input', (e) => {
             this.searchTerm = e.target.value.toLowerCase();
             this.render();
         });
 
-        // Buscador de la vista de Administración de Productos
         document.getElementById('admin-search-input').addEventListener('input', (e) => {
             this.adminSearchTerm = e.target.value.toLowerCase();
             this.renderAdmin();
@@ -1103,7 +1100,6 @@ class POS {
             </tr>
         `).join('');
 
-        // Lógica para filtrar los productos de la tabla de Administración
         let filteredAdminProducts = this.products;
         if (this.adminSearchTerm) {
             filteredAdminProducts = filteredAdminProducts.filter(p => p.name.toLowerCase().includes(this.adminSearchTerm));
@@ -1119,6 +1115,7 @@ class POS {
                 <td>${p.price.toFixed(2).replace('.', ',')} €</td>
                 <td>
                     <button style="color:var(--primary); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.openProductModal('${p.id}')">Editar</button>
+                    <button style="color:var(--checkout-green-text); background:none; font-weight:700; margin-right:15px;" onclick="window.pos.duplicateProduct('${p.id}')">Duplicar</button>
                     <button style="color:var(--danger); background:none; font-weight:700;" onclick="window.pos.delP('${p.id}')">Eliminar</button>
                 </td>
             </tr>`;
@@ -1172,6 +1169,18 @@ class POS {
             document.getElementById('form-category').value = 'MENÚS';
             document.getElementById('form-price').value = '';
         }
+        document.getElementById('product-modal').style.display = 'flex';
+    }
+
+    duplicateProduct(id) {
+        const p = this.products.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('product-modal-title').textContent = 'Duplicar Producto';
+        // ¡Importante! Dejamos el ID vacío para que al guardar lo detecte como uno nuevo
+        document.getElementById('form-id').value = ''; 
+        document.getElementById('form-name').value = p.name + ' (Copia)';
+        document.getElementById('form-category').value = p.category || 'MENÚS';
+        document.getElementById('form-price').value = p.price;
         document.getElementById('product-modal').style.display = 'flex';
     }
 
