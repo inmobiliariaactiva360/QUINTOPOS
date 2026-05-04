@@ -375,10 +375,17 @@
                 </div>
             </div>
 
+            <!-- AQUÍ ESTÁ LA NUEVA SECCIÓN CON EL BUSCADOR DE PRODUCTOS -->
             <div class="admin-section">
-                <div class="admin-header">
+                <div class="admin-header" style="flex-wrap: wrap; gap: 15px;">
                     <h2>Gestión de Productos</h2>
-                    <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="position: relative;">
+                            <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="admin-search-input" placeholder="Buscar producto..." autocomplete="off" style="padding: 10px 15px 10px 32px; border-radius: 8px; border: 1px solid var(--checkout-border); outline: none; font-size: 14px; width: 220px; background: #f9fafb;">
+                        </div>
+                        <button class="btn-primary" onclick="window.pos.openProductModal()">+ Añadir Producto</button>
+                    </div>
                 </div>
                 <div class="table-container">
                     <table>
@@ -552,6 +559,7 @@ class POS {
         this.orders = [];
         this.activeCat = 'Todos';
         this.searchTerm = '';
+        this.adminSearchTerm = '';
         this.nextTicketNumber = 76283;
         
         this.filterType = 'date-range';
@@ -624,9 +632,17 @@ class POS {
         }));
 
         document.getElementById('cash-input').addEventListener('input', () => this.updateChange());
+        
+        // Buscador de vista de Ventas
         document.getElementById('search-input').addEventListener('input', (e) => {
             this.searchTerm = e.target.value.toLowerCase();
             this.render();
+        });
+
+        // Buscador de la vista de Administración de Productos
+        document.getElementById('admin-search-input').addEventListener('input', (e) => {
+            this.adminSearchTerm = e.target.value.toLowerCase();
+            this.renderAdmin();
         });
 
         window.addEventListener('afterprint', () => {
@@ -1087,7 +1103,13 @@ class POS {
             </tr>
         `).join('');
 
-        document.getElementById('admin-list').innerHTML = this.products.map(p => {
+        // Lógica para filtrar los productos de la tabla de Administración
+        let filteredAdminProducts = this.products;
+        if (this.adminSearchTerm) {
+            filteredAdminProducts = filteredAdminProducts.filter(p => p.name.toLowerCase().includes(this.adminSearchTerm));
+        }
+
+        document.getElementById('admin-list').innerHTML = filteredAdminProducts.map(p => {
             const ivaVisual = (p.category && p.category.includes('BEBIDAS')) ? 21 : 10;
             return `
             <tr>
